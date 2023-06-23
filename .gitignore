@@ -72,3 +72,7 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+/UE_TLOZ/Binaries/Win64
+/UE_TLOZ/Intermediate
+/UE_TLOZ/Platforms/HoloLens/Config
+/UE_TLOZ/Saved
