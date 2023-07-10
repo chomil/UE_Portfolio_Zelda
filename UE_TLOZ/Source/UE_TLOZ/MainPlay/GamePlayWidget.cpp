@@ -2,7 +2,7 @@
 
 
 #include "GamePlayWidget.h"
-#include "../GameMode/GamePlayMode.h"
+#include "GamePlayMode.h"
 #include "Kismet/GameplayStatics.h"
 
 void UGamePlayWidget::NativeConstruct()

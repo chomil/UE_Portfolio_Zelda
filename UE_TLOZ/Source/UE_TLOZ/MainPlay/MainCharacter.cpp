@@ -2,7 +2,7 @@
 
 
 #include "MainCharacter.h"
-#include "../GameMode/GamePlayMode.h"
+#include "GamePlayMode.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values

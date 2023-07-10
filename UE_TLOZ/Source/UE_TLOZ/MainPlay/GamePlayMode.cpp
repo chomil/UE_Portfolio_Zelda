@@ -2,7 +2,7 @@
 
 
 #include "GamePlayMode.h"
-#include "../MainPlay/GamePlayWidget.h"
+#include "GamePlayWidget.h"
 
 void AGamePlayMode::SetWidgetText(FString _Text)
 {
