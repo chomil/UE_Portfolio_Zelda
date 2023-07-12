@@ -30,7 +30,13 @@ public:
 
 	void MoveForward(float Val);
 
+	void Dash(float Val);
+
 	void PlayerJump();
+
+	void TurnCamera(float Val);
+	void LookUpCamera(float Val);
+
 
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
@@ -43,4 +49,6 @@ public:
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;
+
+	bool isDash = false;
 };

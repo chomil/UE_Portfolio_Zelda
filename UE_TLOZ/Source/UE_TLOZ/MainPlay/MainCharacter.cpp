@@ -4,6 +4,7 @@
 #include "MainCharacter.h"
 #include "GamePlayMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -11,8 +12,13 @@ AMainCharacter::AMainCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+	// Configure character movement
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f); // ...at this rotation rate
 }
 
 // Called when the game starts or when spawned
@@ -64,6 +70,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_MoveRight", EKeys::D, 1.f));
 
 
+		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_Dash", EKeys::LeftShift, 1.f));
+
+
 		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_Turn", EKeys::MouseX, 1.f));
 		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_LookUp", EKeys::MouseY, -1.f));
 
@@ -75,8 +84,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis("Player_MoveForward", this, &AMainCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Player_MoveRight", this, &AMainCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Player_Turn", this, &AMainCharacter::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("Player_LookUp", this, &AMainCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Player_Turn", this, &AMainCharacter::TurnCamera);
+	PlayerInputComponent->BindAxis("Player_LookUp", this, &AMainCharacter::LookUpCamera);
+	PlayerInputComponent->BindAxis("Player_Dash", this, &AMainCharacter::Dash);
 	
 	PlayerInputComponent->BindAction("Player_Jump", EInputEvent::IE_Pressed, this, &AMainCharacter::PlayerJump);
 
@@ -87,12 +97,18 @@ void AMainCharacter::MoveRight(float Val)
 {
 	if (Val != 0.f)
 	{
-		if (Controller)
-		{
-			FRotator const ControlSpaceRot = Controller->GetControlRotation();
 
-			// transform to world space and add it
-			AddMovementInput(FRotationMatrix(ControlSpaceRot).GetScaledAxis(EAxis::Y), Val);
+		if (Controller != nullptr)
+		{
+			// find out which way is forward
+			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+			// get right vector 
+			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+			// add movement 
+			AddMovementInput(RightDirection, Val);
 		}
 	}
 }
@@ -101,12 +117,38 @@ void AMainCharacter::MoveForward(float Val)
 {
 	if (Val != 0.f)
 	{
-		if (Controller)
+		if (Controller != nullptr)
 		{
-			FRotator const ControlSpaceRot = Controller->GetControlRotation();
+			// find out which way is forward
+			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-			// transform to world space and add it
-			AddMovementInput(FRotationMatrix(ControlSpaceRot).GetScaledAxis(EAxis::X), Val);
+			// get forward vector
+			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+
+			// add movement 
+			AddMovementInput(ForwardDirection, Val);
+		}
+	}
+}
+
+void AMainCharacter::Dash(float Val)
+{
+	if (Val == 1.f)
+	{
+		if (isDash == false)
+		{
+			isDash = true;
+			GetCharacterMovement()->MaxWalkSpeed = 400.f;
+		}
+	}
+	else
+	{
+		if (isDash == true)
+		{
+			isDash = false;
+			GetCharacterMovement()->MaxWalkSpeed = 200.f;
 		}
 	}
 }
@@ -115,4 +157,14 @@ void AMainCharacter::MoveForward(float Val)
 void AMainCharacter::PlayerJump()
 {
 	Jump();
+}
+
+void AMainCharacter::TurnCamera(float Val)
+{
+	AddControllerYawInput(Val * 0.5f);
+}
+
+void AMainCharacter::LookUpCamera(float Val)
+{
+	AddControllerPitchInput(Val * 0.5f);
 }
