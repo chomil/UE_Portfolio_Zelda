@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Enums.h"
 #include "MainCharacter.generated.h"
+
+
+
 
 UCLASS()
 class UE_TLOZ_API AMainCharacter : public ACharacter
@@ -19,13 +23,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:	
 	void MoveRight(float Val);
 
 	void MoveForward(float Val);
@@ -47,8 +51,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn")
 		float BaseLookUpRate;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	PLAYER_ANISTATE aniState = PLAYER_ANISTATE::IDLE;
+
+
+	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
+	TMap<PLAYER_ANISTATE, class UAnimMontage*> AllAnimations;
+
 private:
 	class AGamePlayMode* PlayMode = nullptr;
 
 	bool isDash = false;
+
+
 };

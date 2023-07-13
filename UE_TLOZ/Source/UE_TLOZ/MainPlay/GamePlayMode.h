@@ -6,9 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "GamePlayMode.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class UE_TLOZ_API AGamePlayMode : public AGameMode
 {

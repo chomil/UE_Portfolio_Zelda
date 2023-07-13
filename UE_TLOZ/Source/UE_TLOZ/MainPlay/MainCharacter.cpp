@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MainCharacter.h"
@@ -47,6 +47,12 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		return;
 	}
+
+
+
+
+
+
 
 	PlayMode->SetWidgetText(GetActorLocation().ToString());
 
@@ -119,6 +125,16 @@ void AMainCharacter::MoveForward(float Val)
 	{
 		if (Controller != nullptr)
 		{
+			if (JumpCurrentCount > 0)
+			{
+				return;
+			}
+
+			if (isDash == false)
+			{
+				aniState = PLAYER_ANISTATE::WALK;
+			}
+
 			// find out which way is forward
 			const FRotator Rotation = Controller->GetControlRotation();
 			const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -131,6 +147,10 @@ void AMainCharacter::MoveForward(float Val)
 			AddMovementInput(ForwardDirection, Val);
 		}
 	}
+	else
+	{
+		aniState = PLAYER_ANISTATE::IDLE;
+	}
 }
 
 void AMainCharacter::Dash(float Val)
@@ -140,6 +160,8 @@ void AMainCharacter::Dash(float Val)
 		if (isDash == false)
 		{
 			isDash = true;
+
+			aniState = PLAYER_ANISTATE::DASH;
 			GetCharacterMovement()->MaxWalkSpeed = 400.f;
 		}
 	}
@@ -148,7 +170,7 @@ void AMainCharacter::Dash(float Val)
 		if (isDash == true)
 		{
 			isDash = false;
-			GetCharacterMovement()->MaxWalkSpeed = 200.f;
+			GetCharacterMovement()->MaxWalkSpeed = 150.f;
 		}
 	}
 }
