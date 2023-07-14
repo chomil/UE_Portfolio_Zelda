@@ -9,5 +9,6 @@ enum class PLAYER_ANISTATE : uint8
 	WALK,
 	DASH,
 	JUMP,
+	LAND,
 	ATTACK
 };

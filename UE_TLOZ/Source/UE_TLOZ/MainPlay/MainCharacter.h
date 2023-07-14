@@ -63,6 +63,8 @@ private:
 	class AGamePlayMode* PlayMode = nullptr;
 
 	bool isDash = false;
+	bool isMoveFB = false;
+	bool isMoveLR = false;
 
 
 };

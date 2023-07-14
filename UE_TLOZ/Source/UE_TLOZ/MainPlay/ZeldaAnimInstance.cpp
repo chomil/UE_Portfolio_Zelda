@@ -9,7 +9,9 @@ void UZeldaAnimInstance::NativeBeginPlay()
 	Super::NativeBeginPlay();
 
 
-	OnMontageBlendingOut.AddDynamic(this, &UZeldaAnimInstance::MontageEnd);
+	OnMontageEnded.AddDynamic(this, &UZeldaAnimInstance::MontageEnd);
+
+	
 
 	AMainCharacter* Chracter = Cast<AMainCharacter>(GetOwningActor());
 
@@ -57,5 +59,20 @@ void UZeldaAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 
 void UZeldaAnimInstance::MontageEnd(UAnimMontage* Anim, bool _Inter)
 {
-	
+	TSubclassOf<UAnimInstance> Inst = UZeldaAnimInstance::StaticClass();
+
+	AMainCharacter* Chracter = Cast<AMainCharacter>(GetOwningActor());
+
+	if (nullptr == Chracter || false == Chracter->IsValidLowLevel())
+	{
+		return;
+	}
+
+
+	if (AllAnimations[PLAYER_ANISTATE::LAND] == Anim)
+	{
+		aniState = PLAYER_ANISTATE::IDLE;
+		Chracter->aniState = aniState;
+		Montage_Play(AllAnimations[PLAYER_ANISTATE::IDLE], 1.0f);
+	}
 }

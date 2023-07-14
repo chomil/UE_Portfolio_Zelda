@@ -28,6 +28,4 @@ public:
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Anim, bool _Inter);
 
-
-
 };

@@ -50,6 +50,23 @@ void AMainCharacter::Tick(float DeltaTime)
 
 
 
+	if (aniState == PLAYER_ANISTATE::JUMP)
+	{
+		if (JumpCurrentCount == 0)
+		{
+			if (isMoveFB == true || isMoveLR == true)
+			{
+				aniState = PLAYER_ANISTATE::WALK;
+			}
+			else
+			{
+				aniState = PLAYER_ANISTATE::LAND;
+			}
+		}
+	}
+
+
+
 
 
 
@@ -103,18 +120,39 @@ void AMainCharacter::MoveRight(float Val)
 {
 	if (Val != 0.f)
 	{
+		isMoveLR = true;
+	}
+	else
+	{
+		isMoveLR = false;
+	}
+	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	{
+		return;
+	}
 
-		if (Controller != nullptr)
+	if (Val != 0.f)
+	{
+		if (isDash == false)
 		{
-			// find out which way is forward
-			const FRotator Rotation = Controller->GetControlRotation();
-			const FRotator YawRotation(0, Rotation.Yaw, 0);
+			aniState = PLAYER_ANISTATE::WALK;
+		}
 
-			// get right vector 
-			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-			// add movement 
-			AddMovementInput(RightDirection, Val);
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(RightDirection, Val);
+	}
+	else
+	{
+		if (isMoveFB == false)
+		{
+			aniState = PLAYER_ANISTATE::IDLE;
 		}
 	}
 }
@@ -123,47 +161,60 @@ void AMainCharacter::MoveForward(float Val)
 {
 	if (Val != 0.f)
 	{
-		if (Controller != nullptr)
-		{
-			if (JumpCurrentCount > 0)
-			{
-				return;
-			}
-
-			if (isDash == false)
-			{
-				aniState = PLAYER_ANISTATE::WALK;
-			}
-
-			// find out which way is forward
-			const FRotator Rotation = Controller->GetControlRotation();
-			const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-			// get forward vector
-			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-
-			// add movement 
-			AddMovementInput(ForwardDirection, Val);
-		}
+		isMoveFB = true;
 	}
 	else
 	{
-		aniState = PLAYER_ANISTATE::IDLE;
+		isMoveFB = false;
+	}
+	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	{
+		return;
+	}
+
+	if (Val != 0.f)
+	{
+
+		if (isDash == false)
+		{
+			aniState = PLAYER_ANISTATE::WALK;
+		}
+
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, Val);
+	}
+	else
+	{
+		if (isMoveLR == false)
+		{
+			aniState = PLAYER_ANISTATE::IDLE;
+		}
 	}
 }
 
 void AMainCharacter::Dash(float Val)
 {
+	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	{
+		return;
+	}
+
 	if (Val == 1.f)
 	{
 		if (isDash == false)
 		{
 			isDash = true;
 
-			aniState = PLAYER_ANISTATE::DASH;
 			GetCharacterMovement()->MaxWalkSpeed = 400.f;
 		}
+		aniState = PLAYER_ANISTATE::DASH;
 	}
 	else
 	{
@@ -172,13 +223,27 @@ void AMainCharacter::Dash(float Val)
 			isDash = false;
 			GetCharacterMovement()->MaxWalkSpeed = 150.f;
 		}
+		if (isMoveFB == true || isMoveLR == true)
+		{
+			aniState = PLAYER_ANISTATE::WALK;
+		}
+		else
+		{
+			aniState = PLAYER_ANISTATE::IDLE;
+		}
 	}
 }
 
 
 void AMainCharacter::PlayerJump()
 {
-	Jump();
+	if (CanJump())
+	{
+		isMoveFB = false;
+		isMoveLR = false;
+		aniState = PLAYER_ANISTATE::JUMP;
+		Jump();
+	}
 }
 
 void AMainCharacter::TurnCamera(float Val)
