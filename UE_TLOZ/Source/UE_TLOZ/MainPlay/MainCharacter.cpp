@@ -54,14 +54,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		if (JumpCurrentCount == 0)
 		{
-			if (isMoveFB == true || isMoveLR == true)
-			{
-				aniState = PLAYER_ANISTATE::WALK;
-			}
-			else
-			{
-				aniState = PLAYER_ANISTATE::LAND;
-			}
+			aniState = PLAYER_ANISTATE::LAND;
 		}
 	}
 
@@ -133,7 +126,11 @@ void AMainCharacter::MoveRight(float Val)
 
 	if (Val != 0.f)
 	{
-		if (isDash == false)
+		if (isDash == true)
+		{
+			aniState = PLAYER_ANISTATE::DASH;
+		}
+		else
 		{
 			aniState = PLAYER_ANISTATE::WALK;
 		}
@@ -174,8 +171,11 @@ void AMainCharacter::MoveForward(float Val)
 
 	if (Val != 0.f)
 	{
-
-		if (isDash == false)
+		if (isDash == true)
+		{
+			aniState = PLAYER_ANISTATE::DASH;
+		}
+		else
 		{
 			aniState = PLAYER_ANISTATE::WALK;
 		}
@@ -201,11 +201,6 @@ void AMainCharacter::MoveForward(float Val)
 
 void AMainCharacter::Dash(float Val)
 {
-	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
-	{
-		return;
-	}
-
 	if (Val == 1.f)
 	{
 		if (isDash == false)
@@ -214,7 +209,6 @@ void AMainCharacter::Dash(float Val)
 
 			GetCharacterMovement()->MaxWalkSpeed = 400.f;
 		}
-		aniState = PLAYER_ANISTATE::DASH;
 	}
 	else
 	{
@@ -222,14 +216,6 @@ void AMainCharacter::Dash(float Val)
 		{
 			isDash = false;
 			GetCharacterMovement()->MaxWalkSpeed = 150.f;
-		}
-		if (isMoveFB == true || isMoveLR == true)
-		{
-			aniState = PLAYER_ANISTATE::WALK;
-		}
-		else
-		{
-			aniState = PLAYER_ANISTATE::IDLE;
 		}
 	}
 }

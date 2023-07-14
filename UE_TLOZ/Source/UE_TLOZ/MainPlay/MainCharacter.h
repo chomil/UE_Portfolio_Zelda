@@ -59,12 +59,16 @@ public:
 	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
 	TMap<PLAYER_ANISTATE, class UAnimMontage*> AllAnimations;
 
-private:
-	class AGamePlayMode* PlayMode = nullptr;
+
+public:
 
 	bool isDash = false;
 	bool isMoveFB = false;
 	bool isMoveLR = false;
+
+private:
+	class AGamePlayMode* PlayMode = nullptr;
+
 
 
 };

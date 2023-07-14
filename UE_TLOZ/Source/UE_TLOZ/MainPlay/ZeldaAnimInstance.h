@@ -28,4 +28,6 @@ public:
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Anim, bool _Inter);
 
+	//UFUNCTION()
+	//void AnimNotify_Landing();
 };

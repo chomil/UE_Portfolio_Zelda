@@ -36,7 +36,7 @@ void UZeldaAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 
 	AMainCharacter* Chracter = Cast<AMainCharacter>(GetOwningActor());
 
-	if (nullptr == Chracter && false == Chracter->IsValidLowLevel())
+	if (nullptr == Chracter || false == Chracter->IsValidLowLevel())
 	{
 		return;
 	}
@@ -71,8 +71,23 @@ void UZeldaAnimInstance::MontageEnd(UAnimMontage* Anim, bool _Inter)
 
 	if (AllAnimations[PLAYER_ANISTATE::LAND] == Anim)
 	{
-		aniState = PLAYER_ANISTATE::IDLE;
+
+		if (Chracter->isMoveFB == true || Chracter->isMoveLR == true)
+		{
+			if (Chracter->isDash == true)
+			{
+				aniState = PLAYER_ANISTATE::DASH;
+			}
+			else
+			{
+				aniState = PLAYER_ANISTATE::WALK;
+			}
+		}
+		else
+		{
+			aniState = PLAYER_ANISTATE::IDLE;
+		}
 		Chracter->aniState = aniState;
-		Montage_Play(AllAnimations[PLAYER_ANISTATE::IDLE], 1.0f);
+		Montage_Play(AllAnimations[aniState], 1.0f);
 	}
 }
