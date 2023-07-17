@@ -63,8 +63,6 @@ public:
 public:
 
 	bool isDash = false;
-	bool isMoveFB = false;
-	bool isMoveLR = false;
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;

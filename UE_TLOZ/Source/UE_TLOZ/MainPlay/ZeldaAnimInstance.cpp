@@ -72,21 +72,7 @@ void UZeldaAnimInstance::MontageEnd(UAnimMontage* Anim, bool _Inter)
 	if (AllAnimations[PLAYER_ANISTATE::LAND] == Anim)
 	{
 
-		if (Chracter->isMoveFB == true || Chracter->isMoveLR == true)
-		{
-			if (Chracter->isDash == true)
-			{
-				aniState = PLAYER_ANISTATE::DASH;
-			}
-			else
-			{
-				aniState = PLAYER_ANISTATE::WALK;
-			}
-		}
-		else
-		{
-			aniState = PLAYER_ANISTATE::IDLE;
-		}
+		aniState = PLAYER_ANISTATE::IDLE;
 		Chracter->aniState = aniState;
 		Montage_Play(AllAnimations[aniState], 1.0f);
 	}

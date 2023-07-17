@@ -18,7 +18,7 @@ AMainCharacter::AMainCharacter()
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f); // ...at this rotation rate
 }
 
 // Called when the game starts or when spawned
@@ -28,7 +28,7 @@ void AMainCharacter::BeginPlay()
 
 
 	AGameModeBase* GameModePtr = UGameplayStatics::GetGameMode(GetWorld());
-	if (nullptr == GameModePtr && GameModePtr->IsValidLowLevel())
+	if (nullptr == GameModePtr)
 	{
 		return;
 	}
@@ -48,8 +48,6 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 
-
-
 	if (aniState == PLAYER_ANISTATE::JUMP)
 	{
 		if (JumpCurrentCount == 0)
@@ -57,13 +55,7 @@ void AMainCharacter::Tick(float DeltaTime)
 			aniState = PLAYER_ANISTATE::LAND;
 		}
 	}
-
-
-
-
-
-
-
+	//UE_LOG(LogTemp, Log, TEXT("%d"), (int)aniState);
 	PlayMode->SetWidgetText(GetActorLocation().ToString());
 
 }
@@ -111,14 +103,6 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::MoveRight(float Val)
 {
-	if (Val != 0.f)
-	{
-		isMoveLR = true;
-	}
-	else
-	{
-		isMoveLR = false;
-	}
 	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
 	{
 		return;
@@ -147,7 +131,7 @@ void AMainCharacter::MoveRight(float Val)
 	}
 	else
 	{
-		if (isMoveFB == false)
+		if (GetCharacterMovement()->GetCurrentAcceleration()==FVector::Zero())
 		{
 			aniState = PLAYER_ANISTATE::IDLE;
 		}
@@ -156,14 +140,6 @@ void AMainCharacter::MoveRight(float Val)
 
 void AMainCharacter::MoveForward(float Val)
 {
-	if (Val != 0.f)
-	{
-		isMoveFB = true;
-	}
-	else
-	{
-		isMoveFB = false;
-	}
 	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
 	{
 		return;
@@ -192,7 +168,7 @@ void AMainCharacter::MoveForward(float Val)
 	}
 	else
 	{
-		if (isMoveLR == false)
+		if (GetCharacterMovement()->GetCurrentAcceleration() == FVector::Zero())
 		{
 			aniState = PLAYER_ANISTATE::IDLE;
 		}
@@ -201,12 +177,15 @@ void AMainCharacter::MoveForward(float Val)
 
 void AMainCharacter::Dash(float Val)
 {
+	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	{
+		return;
+	}
 	if (Val == 1.f)
 	{
 		if (isDash == false)
 		{
 			isDash = true;
-
 			GetCharacterMovement()->MaxWalkSpeed = 400.f;
 		}
 	}
@@ -223,13 +202,13 @@ void AMainCharacter::Dash(float Val)
 
 void AMainCharacter::PlayerJump()
 {
-	if (CanJump())
+	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
 	{
-		isMoveFB = false;
-		isMoveLR = false;
-		aniState = PLAYER_ANISTATE::JUMP;
-		Jump();
+		return;
 	}
+
+	aniState = PLAYER_ANISTATE::JUMP;
+	Jump();
 }
 
 void AMainCharacter::TurnCamera(float Val)
