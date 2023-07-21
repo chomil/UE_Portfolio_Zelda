@@ -38,6 +38,8 @@ public:
 
 	void PlayerJump();
 
+	void Attack();
+
 	void TurnCamera(float Val);
 	void LookUpCamera(float Val);
 
@@ -61,12 +63,12 @@ public:
 
 
 public:
-
+	FVector vInputDir = FVector::ZeroVector;
 	bool isDash = false;
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;
-
+	float fComboTime = 0.f;
 
 
 };

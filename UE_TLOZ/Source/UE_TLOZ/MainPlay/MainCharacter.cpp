@@ -19,6 +19,8 @@ AMainCharacter::AMainCharacter()
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f); // ...at this rotation rate
+
+	GetCharacterMovement()->MaxWalkSpeed = 250.f;
 }
 
 // Called when the game starts or when spawned
@@ -42,19 +44,42 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
 
 	if (PlayMode == nullptr)
 	{
 		return;
 	}
 
-	if (aniState == PLAYER_ANISTATE::JUMP)
+
+	switch (aniState)
 	{
+	case PLAYER_ANISTATE::JUMP:		
 		if (JumpCurrentCount == 0)
 		{
-			aniState = PLAYER_ANISTATE::LAND;
+			if (vInputDir.IsZero())
+			{
+				aniState = PLAYER_ANISTATE::LAND;
+			}
+			else
+			{
+				aniState = PLAYER_ANISTATE::RUN;
+			}
 		}
+		break;
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::ATTACK4:
+	case PLAYER_ANISTATE::ATTACK_DASH:
+		fComboTime += DeltaTime;
+		break;
+	default:
+		GetCharacterMovement()->GroundFriction = 8.f;
+		fComboTime = 0.f;
+		break;
 	}
+
 	//UE_LOG(LogTemp, Log, TEXT("%d"), (int)aniState);
 	PlayMode->SetWidgetText(GetActorLocation().ToString());
 
@@ -86,6 +111,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 
 		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_Jump", EKeys::SpaceBar));
+		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_Click", EKeys::LeftMouseButton));
 
 
 	}
@@ -95,17 +121,29 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("Player_Turn", this, &AMainCharacter::TurnCamera);
 	PlayerInputComponent->BindAxis("Player_LookUp", this, &AMainCharacter::LookUpCamera);
 	PlayerInputComponent->BindAxis("Player_Dash", this, &AMainCharacter::Dash);
-	
+
 	PlayerInputComponent->BindAction("Player_Jump", EInputEvent::IE_Pressed, this, &AMainCharacter::PlayerJump);
+	PlayerInputComponent->BindAction("Player_Click", EInputEvent::IE_Pressed, this, &AMainCharacter::Attack);
 
 }
 
 
 void AMainCharacter::MoveRight(float Val)
 {
-	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	vInputDir.Y = Val;
+
+	switch (aniState)
 	{
+	case PLAYER_ANISTATE::JUMP:
+	case PLAYER_ANISTATE::LAND:
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::ATTACK4:
+	case PLAYER_ANISTATE::ATTACK_DASH:
 		return;
+	default:
+		break;
 	}
 
 	if (Val != 0.f)
@@ -116,7 +154,7 @@ void AMainCharacter::MoveRight(float Val)
 		}
 		else
 		{
-			aniState = PLAYER_ANISTATE::WALK;
+			aniState = PLAYER_ANISTATE::RUN;
 		}
 
 		// find out which way is forward
@@ -131,7 +169,7 @@ void AMainCharacter::MoveRight(float Val)
 	}
 	else
 	{
-		if (GetCharacterMovement()->GetCurrentAcceleration()==FVector::Zero())
+		if (vInputDir.IsZero())
 		{
 			aniState = PLAYER_ANISTATE::IDLE;
 		}
@@ -140,9 +178,19 @@ void AMainCharacter::MoveRight(float Val)
 
 void AMainCharacter::MoveForward(float Val)
 {
-	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	vInputDir.X = Val;
+	switch (aniState)
 	{
+	case PLAYER_ANISTATE::JUMP:
+	case PLAYER_ANISTATE::LAND:
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::ATTACK4:
+	case PLAYER_ANISTATE::ATTACK_DASH:
 		return;
+	default:
+		break;
 	}
 
 	if (Val != 0.f)
@@ -153,7 +201,7 @@ void AMainCharacter::MoveForward(float Val)
 		}
 		else
 		{
-			aniState = PLAYER_ANISTATE::WALK;
+			aniState = PLAYER_ANISTATE::RUN;
 		}
 
 		// find out which way is forward
@@ -168,7 +216,7 @@ void AMainCharacter::MoveForward(float Val)
 	}
 	else
 	{
-		if (GetCharacterMovement()->GetCurrentAcceleration() == FVector::Zero())
+		if (vInputDir.IsZero())
 		{
 			aniState = PLAYER_ANISTATE::IDLE;
 		}
@@ -177,9 +225,18 @@ void AMainCharacter::MoveForward(float Val)
 
 void AMainCharacter::Dash(float Val)
 {
-	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	switch (aniState)
 	{
+	case PLAYER_ANISTATE::JUMP:
+	case PLAYER_ANISTATE::LAND:
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::ATTACK4:
+	case PLAYER_ANISTATE::ATTACK_DASH:
 		return;
+	default:
+		break;
 	}
 	if (Val == 1.f)
 	{
@@ -194,7 +251,7 @@ void AMainCharacter::Dash(float Val)
 		if (isDash == true)
 		{
 			isDash = false;
-			GetCharacterMovement()->MaxWalkSpeed = 150.f;
+			GetCharacterMovement()->MaxWalkSpeed = 250.f;
 		}
 	}
 }
@@ -209,6 +266,61 @@ void AMainCharacter::PlayerJump()
 
 	aniState = PLAYER_ANISTATE::JUMP;
 	Jump();
+}
+
+void AMainCharacter::Attack()
+{
+	UE_LOG(LogTemp, Log, TEXT("현재 %d"), (int)aniState);
+	switch (aniState)
+	{
+	case PLAYER_ANISTATE::DASH:
+		GetCharacterMovement()->GroundFriction = 0;
+		GetCharacterMovement()->AddImpulse(GetActorForwardVector() * 500, true);
+		aniState = PLAYER_ANISTATE::ATTACK_DASH;
+		break;
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::RUN:
+		aniState = PLAYER_ANISTATE::ATTACK1;
+		break;
+	case PLAYER_ANISTATE::ATTACK1:
+		if (fComboTime > 0.3f)
+		{
+			fComboTime = 0.f;
+			aniState = PLAYER_ANISTATE::ATTACK2;
+			break;
+		}
+	case PLAYER_ANISTATE::ATTACK2:
+		if (fComboTime > 0.3f)
+		{
+			fComboTime = 0.f;
+			aniState = PLAYER_ANISTATE::ATTACK3;
+			break;
+		}
+	case PLAYER_ANISTATE::ATTACK3:
+		if (fComboTime > 0.3f)
+		{
+			fComboTime = 0.f;
+			aniState = PLAYER_ANISTATE::ATTACK4;
+			break;
+		}
+	case PLAYER_ANISTATE::ATTACK4:
+		if (fComboTime > 0.9f)
+		{
+			fComboTime = 0.f;
+			aniState = PLAYER_ANISTATE::ATTACK1;
+			break;
+		}
+	case PLAYER_ANISTATE::ATTACK_DASH:
+		if (fComboTime > 0.6f)
+		{
+			fComboTime = 0.f;
+			aniState = PLAYER_ANISTATE::ATTACK1;
+			break;
+		}
+	default:
+		break;
+	}
+	UE_LOG(LogTemp, Log, TEXT("바꿈 %d"), (int)aniState);
 }
 
 void AMainCharacter::TurnCamera(float Val)

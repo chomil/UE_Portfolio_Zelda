@@ -68,12 +68,20 @@ void UZeldaAnimInstance::MontageEnd(UAnimMontage* Anim, bool _Inter)
 		return;
 	}
 
-
-	if (AllAnimations[PLAYER_ANISTATE::LAND] == Anim)
+	if (_Inter == false)
 	{
+		if (AllAnimations[PLAYER_ANISTATE::LAND] == Anim ||
+			AllAnimations[PLAYER_ANISTATE::ATTACK1] == Anim ||
+			AllAnimations[PLAYER_ANISTATE::ATTACK2] == Anim ||
+			AllAnimations[PLAYER_ANISTATE::ATTACK3] == Anim ||
+			AllAnimations[PLAYER_ANISTATE::ATTACK4] == Anim ||
+			AllAnimations[PLAYER_ANISTATE::ATTACK_DASH] == Anim)
+		{
 
-		aniState = PLAYER_ANISTATE::IDLE;
-		Chracter->aniState = aniState;
-		Montage_Play(AllAnimations[aniState], 1.0f);
+			aniState = PLAYER_ANISTATE::IDLE;
+			Chracter->aniState = aniState;
+			Montage_Play(AllAnimations[aniState], 1.0f);
+		}
 	}
+
 }
