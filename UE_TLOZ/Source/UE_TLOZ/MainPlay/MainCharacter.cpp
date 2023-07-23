@@ -148,7 +148,11 @@ void AMainCharacter::MoveRight(float Val)
 
 	if (Val != 0.f)
 	{
-		if (isDash == true)
+		FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+		Rule.ScaleRule = EAttachmentRule::KeepWorld;
+		WeaponPtr->AttachToComponent(WeaponPtr->GetAttachParent(), Rule, FName("Sword_Wait"));
+
+		if (bIsDash == true)
 		{
 			aniState = PLAYER_ANISTATE::DASH;
 		}
@@ -195,7 +199,11 @@ void AMainCharacter::MoveForward(float Val)
 
 	if (Val != 0.f)
 	{
-		if (isDash == true)
+		FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+		Rule.ScaleRule = EAttachmentRule::KeepWorld;
+		WeaponPtr->AttachToComponent(WeaponPtr->GetAttachParent(), Rule, FName("Sword_Wait"));
+
+		if (bIsDash == true)
 		{
 			aniState = PLAYER_ANISTATE::DASH;
 		}
@@ -240,17 +248,17 @@ void AMainCharacter::Dash(float Val)
 	}
 	if (Val == 1.f)
 	{
-		if (isDash == false)
+		if (bIsDash == false)
 		{
-			isDash = true;
+			bIsDash = true;
 			GetCharacterMovement()->MaxWalkSpeed = 400.f;
 		}
 	}
 	else
 	{
-		if (isDash == true)
+		if (bIsDash == true)
 		{
-			isDash = false;
+			bIsDash = false;
 			GetCharacterMovement()->MaxWalkSpeed = 250.f;
 		}
 	}
@@ -280,8 +288,13 @@ void AMainCharacter::Attack()
 		break;
 	case PLAYER_ANISTATE::IDLE:
 	case PLAYER_ANISTATE::RUN:
+	{
 		aniState = PLAYER_ANISTATE::ATTACK1;
+		FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+		Rule.ScaleRule = EAttachmentRule::KeepWorld;
+		WeaponPtr->AttachToComponent(WeaponPtr->GetAttachParent(), Rule, FName("Weapon_R"));
 		break;
+	}
 	case PLAYER_ANISTATE::ATTACK1:
 		if (fComboTime > 0.3f)
 		{

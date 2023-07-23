@@ -64,7 +64,15 @@ public:
 
 public:
 	FVector vInputDir = FVector::ZeroVector;
-	bool isDash = false;
+	bool bIsDash = false;
+
+
+	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* WeaponPtr;
+
+
+	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
+	USkeletalMeshComponent* BowPtr;
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;
