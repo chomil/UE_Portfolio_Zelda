@@ -131,7 +131,6 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AMainCharacter::MoveRight(float Val)
 {
 	vInputDir.Y = Val;
-
 	switch (aniState)
 	{
 	case PLAYER_ANISTATE::JUMP:
@@ -141,6 +140,8 @@ void AMainCharacter::MoveRight(float Val)
 	case PLAYER_ANISTATE::ATTACK3:
 	case PLAYER_ANISTATE::ATTACK4:
 	case PLAYER_ANISTATE::ATTACK_DASH:
+	case PLAYER_ANISTATE::SWORD_ON:
+	case PLAYER_ANISTATE::SWORD_OFF:
 		return;
 	default:
 		break;
@@ -148,10 +149,6 @@ void AMainCharacter::MoveRight(float Val)
 
 	if (Val != 0.f)
 	{
-		FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
-		Rule.ScaleRule = EAttachmentRule::KeepWorld;
-		WeaponPtr->AttachToComponent(WeaponPtr->GetAttachParent(), Rule, FName("Sword_Wait"));
-
 		if (bIsDash == true)
 		{
 			aniState = PLAYER_ANISTATE::DASH;
@@ -175,7 +172,14 @@ void AMainCharacter::MoveRight(float Val)
 	{
 		if (vInputDir.IsZero())
 		{
-			aniState = PLAYER_ANISTATE::IDLE;
+			if (bEquipSword)
+			{
+				aniState = PLAYER_ANISTATE::IDLE_WEAPON;
+			}
+			else
+			{
+				aniState = PLAYER_ANISTATE::IDLE;
+			}
 		}
 	}
 }
@@ -192,6 +196,8 @@ void AMainCharacter::MoveForward(float Val)
 	case PLAYER_ANISTATE::ATTACK3:
 	case PLAYER_ANISTATE::ATTACK4:
 	case PLAYER_ANISTATE::ATTACK_DASH:
+	case PLAYER_ANISTATE::SWORD_ON:
+	case PLAYER_ANISTATE::SWORD_OFF:
 		return;
 	default:
 		break;
@@ -199,10 +205,6 @@ void AMainCharacter::MoveForward(float Val)
 
 	if (Val != 0.f)
 	{
-		FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
-		Rule.ScaleRule = EAttachmentRule::KeepWorld;
-		WeaponPtr->AttachToComponent(WeaponPtr->GetAttachParent(), Rule, FName("Sword_Wait"));
-
 		if (bIsDash == true)
 		{
 			aniState = PLAYER_ANISTATE::DASH;
@@ -226,7 +228,14 @@ void AMainCharacter::MoveForward(float Val)
 	{
 		if (vInputDir.IsZero())
 		{
-			aniState = PLAYER_ANISTATE::IDLE;
+			if (bEquipSword)
+			{
+				aniState = PLAYER_ANISTATE::IDLE_WEAPON;
+			}
+			else
+			{
+				aniState = PLAYER_ANISTATE::IDLE;
+			}
 		}
 	}
 }
@@ -242,6 +251,8 @@ void AMainCharacter::Dash(float Val)
 	case PLAYER_ANISTATE::ATTACK3:
 	case PLAYER_ANISTATE::ATTACK4:
 	case PLAYER_ANISTATE::ATTACK_DASH:
+	case PLAYER_ANISTATE::SWORD_ON:
+	case PLAYER_ANISTATE::SWORD_OFF:
 		return;
 	default:
 		break;
@@ -278,21 +289,27 @@ void AMainCharacter::PlayerJump()
 
 void AMainCharacter::Attack()
 {
-	UE_LOG(LogTemp, Log, TEXT("현재 %d"), (int)aniState);
 	switch (aniState)
 	{
 	case PLAYER_ANISTATE::DASH:
 		GetCharacterMovement()->GroundFriction = 0;
 		GetCharacterMovement()->AddImpulse(GetActorForwardVector() * 500, true);
 		aniState = PLAYER_ANISTATE::ATTACK_DASH;
+		ChangeWeaponSocket(WeaponPtr, "Weapon_R");
 		break;
 	case PLAYER_ANISTATE::IDLE:
 	case PLAYER_ANISTATE::RUN:
 	{
+		if (bEquipSword == false)
+		{
+			aniState = PLAYER_ANISTATE::SWORD_ON;
+			ChangeWeaponSocket(WeaponPtr, "Weapon_R");
+			break;
+		}
+	}
+	case PLAYER_ANISTATE::IDLE_WEAPON:
+	{
 		aniState = PLAYER_ANISTATE::ATTACK1;
-		FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
-		Rule.ScaleRule = EAttachmentRule::KeepWorld;
-		WeaponPtr->AttachToComponent(WeaponPtr->GetAttachParent(), Rule, FName("Weapon_R"));
 		break;
 	}
 	case PLAYER_ANISTATE::ATTACK1:
@@ -333,7 +350,6 @@ void AMainCharacter::Attack()
 	default:
 		break;
 	}
-	UE_LOG(LogTemp, Log, TEXT("바꿈 %d"), (int)aniState);
 }
 
 void AMainCharacter::TurnCamera(float Val)
@@ -344,4 +360,19 @@ void AMainCharacter::TurnCamera(float Val)
 void AMainCharacter::LookUpCamera(float Val)
 {
 	AddControllerPitchInput(Val * 0.5f);
+}
+
+void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName)
+{
+	FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+	Rule.ScaleRule = EAttachmentRule::KeepWorld;
+	_WeaponMesh->AttachToComponent(_WeaponMesh->GetAttachParent(), Rule, _SocketName);
+	if (_SocketName == FName("Sword_Wait"))
+	{
+		bEquipSword = false;
+	}
+	else if (_SocketName == FName("Weapon_R"))
+	{
+		bEquipSword = true;
+	}
 }

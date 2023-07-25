@@ -9,7 +9,7 @@ void UZeldaAnimInstance::NativeBeginPlay()
 	Super::NativeBeginPlay();
 
 
-	OnMontageEnded.AddDynamic(this, &UZeldaAnimInstance::MontageEnd);
+	OnMontageBlendingOut.AddDynamic(this, &UZeldaAnimInstance::MontageEnd);
 
 	
 
@@ -41,17 +41,26 @@ void UZeldaAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 		return;
 	}
 
+	UE_LOG(LogTemp, Log, TEXT("PrevState %d"), (int)aniState);
 	aniState = Chracter->aniState;
 
+	UE_LOG(LogTemp, Log, TEXT("NextState %d"), (int)aniState);
 	class UAnimMontage* Montage = AllAnimations[aniState];
 
 	if (nullptr == Montage)
 	{
 		return;
 	}
-
+	
+	
 	if (false == Montage_IsPlaying(Montage))
 	{
+		if (Montage == CurMontage && Montage->bLoop == true)
+		{
+			return;
+		}
+
+		CurMontage = Montage;
 		Montage_Play(Montage, 1.0f);
 	}
 }
@@ -75,10 +84,17 @@ void UZeldaAnimInstance::MontageEnd(UAnimMontage* Anim, bool _Inter)
 			AllAnimations[PLAYER_ANISTATE::ATTACK2] == Anim ||
 			AllAnimations[PLAYER_ANISTATE::ATTACK3] == Anim ||
 			AllAnimations[PLAYER_ANISTATE::ATTACK4] == Anim ||
-			AllAnimations[PLAYER_ANISTATE::ATTACK_DASH] == Anim)
+			AllAnimations[PLAYER_ANISTATE::ATTACK_DASH] == Anim||
+			AllAnimations[PLAYER_ANISTATE::SWORD_OFF] == Anim)
 		{
 
 			aniState = PLAYER_ANISTATE::IDLE;
+			Chracter->aniState = aniState;
+			Montage_Play(AllAnimations[aniState], 1.0f);
+		}
+		else if (AllAnimations[PLAYER_ANISTATE::SWORD_ON] == Anim)
+		{
+			aniState = PLAYER_ANISTATE::IDLE_WEAPON;
 			Chracter->aniState = aniState;
 			Montage_Play(AllAnimations[aniState], 1.0f);
 		}

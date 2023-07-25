@@ -65,7 +65,10 @@ public:
 public:
 	FVector vInputDir = FVector::ZeroVector;
 	bool bIsDash = false;
+	bool bEquipSword = false;
 
+
+	void ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName);
 
 	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* WeaponPtr;

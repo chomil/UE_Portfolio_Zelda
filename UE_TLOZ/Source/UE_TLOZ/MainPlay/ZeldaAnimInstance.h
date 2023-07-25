@@ -24,6 +24,7 @@ public:
 	PLAYER_ANISTATE aniState = PLAYER_ANISTATE::IDLE;
 
 	TMap<PLAYER_ANISTATE, class UAnimMontage*> AllAnimations;
+	class UAnimMontage* CurMontage = nullptr;
 
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Anim, bool _Inter);
