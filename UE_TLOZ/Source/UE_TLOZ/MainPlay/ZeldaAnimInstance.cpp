@@ -85,16 +85,11 @@ void UZeldaAnimInstance::MontageEnd(UAnimMontage* Anim, bool _Inter)
 			AllAnimations[PLAYER_ANISTATE::ATTACK3] == Anim ||
 			AllAnimations[PLAYER_ANISTATE::ATTACK4] == Anim ||
 			AllAnimations[PLAYER_ANISTATE::ATTACK_DASH] == Anim||
+			AllAnimations[PLAYER_ANISTATE::SWORD_ON] == Anim||
 			AllAnimations[PLAYER_ANISTATE::SWORD_OFF] == Anim)
 		{
 
 			aniState = PLAYER_ANISTATE::IDLE;
-			Chracter->aniState = aniState;
-			Montage_Play(AllAnimations[aniState], 1.0f);
-		}
-		else if (AllAnimations[PLAYER_ANISTATE::SWORD_ON] == Anim)
-		{
-			aniState = PLAYER_ANISTATE::IDLE_WEAPON;
 			Chracter->aniState = aniState;
 			Montage_Play(AllAnimations[aniState], 1.0f);
 		}

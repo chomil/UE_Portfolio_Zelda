@@ -172,14 +172,7 @@ void AMainCharacter::MoveRight(float Val)
 	{
 		if (vInputDir.IsZero())
 		{
-			if (bEquipSword)
-			{
-				aniState = PLAYER_ANISTATE::IDLE_WEAPON;
-			}
-			else
-			{
-				aniState = PLAYER_ANISTATE::IDLE;
-			}
+			aniState = PLAYER_ANISTATE::IDLE;
 		}
 	}
 }
@@ -228,14 +221,7 @@ void AMainCharacter::MoveForward(float Val)
 	{
 		if (vInputDir.IsZero())
 		{
-			if (bEquipSword)
-			{
-				aniState = PLAYER_ANISTATE::IDLE_WEAPON;
-			}
-			else
-			{
-				aniState = PLAYER_ANISTATE::IDLE;
-			}
+			aniState = PLAYER_ANISTATE::IDLE;
 		}
 	}
 }
@@ -306,11 +292,11 @@ void AMainCharacter::Attack()
 			ChangeWeaponSocket(WeaponPtr, "Weapon_R");
 			break;
 		}
-	}
-	case PLAYER_ANISTATE::IDLE_WEAPON:
-	{
-		aniState = PLAYER_ANISTATE::ATTACK1;
-		break;
+		else
+		{
+			aniState = PLAYER_ANISTATE::ATTACK1;
+			break;
+		}
 	}
 	case PLAYER_ANISTATE::ATTACK1:
 		if (fComboTime > 0.3f)
@@ -360,6 +346,26 @@ void AMainCharacter::TurnCamera(float Val)
 void AMainCharacter::LookUpCamera(float Val)
 {
 	AddControllerPitchInput(Val * 0.5f);
+}
+
+float AMainCharacter::GetRightHandBlending()
+{
+	switch (aniState)
+	{
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
+	case PLAYER_ANISTATE::JUMP:
+	case PLAYER_ANISTATE::LAND:
+		if (bEquipSword)
+		{
+			return 1.0f;
+		}
+	default:
+		return 0.0f;
+	}
+	return 0.0f;
 }
 
 void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName)
