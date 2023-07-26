@@ -18,7 +18,7 @@ AMainCharacter::AMainCharacter()
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	GetCharacterMovement()->MaxWalkSpeed = 250.f;
 }
@@ -348,7 +348,7 @@ void AMainCharacter::LookUpCamera(float Val)
 	AddControllerPitchInput(Val * 0.5f);
 }
 
-float AMainCharacter::GetRightHandBlending()
+bool AMainCharacter::GetRightHandBlending()
 {
 	switch (aniState)
 	{
@@ -356,16 +356,16 @@ float AMainCharacter::GetRightHandBlending()
 	case PLAYER_ANISTATE::WALK:
 	case PLAYER_ANISTATE::RUN:
 	case PLAYER_ANISTATE::DASH:
-	case PLAYER_ANISTATE::JUMP:
 	case PLAYER_ANISTATE::LAND:
+	case PLAYER_ANISTATE::JUMP:
 		if (bEquipSword)
 		{
-			return 1.0f;
+			return true;
 		}
 	default:
-		return 0.0f;
+		return false;
 	}
-	return 0.0f;
+	return false;
 }
 
 void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName)

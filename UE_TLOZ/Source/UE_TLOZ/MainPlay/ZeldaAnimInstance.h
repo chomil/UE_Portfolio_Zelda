@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "Enums.h"
+#include <Global/Data/StateEnums.h>
 #include "ZeldaAnimInstance.generated.h"
 
 /**

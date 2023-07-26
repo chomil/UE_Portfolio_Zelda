@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Enums.h"
+#include <Global/Data/StateEnums.h>
 #include "MainCharacter.generated.h"
 
 
@@ -44,7 +44,7 @@ public:
 	void LookUpCamera(float Val);
 
 	UFUNCTION(BlueprintCallable)
-	float GetRightHandBlending();
+	bool GetRightHandBlending();
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn")
