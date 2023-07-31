@@ -13,5 +13,19 @@ UCLASS()
 class UE_TLOZ_API AAICharacter : public AGlobalCharacter
 {
 	GENERATED_BODY()
-	
+
+public:
+	FORCEINLINE class UBehaviorTree* GetBehaviorTree()
+	{
+		return BehaviorTree;
+	}
+
+	class UBlackboardComponent* GetBlackboardComponent();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+		class UBehaviorTree* BehaviorTree;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+		class UBlackboardComponent* BlackboardComponent;
 };

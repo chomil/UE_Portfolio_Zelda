@@ -49,6 +49,15 @@ public:
 		return AllAnimations[_Index];
 	}
 
+	template<typename EnumType>
+	void SetAllAnimation(const TMap<EnumType, class UAnimMontage*>& _MapAnimation)
+	{
+		for (TPair<EnumType, UAnimMontage*> Pair : _MapAnimation)
+		{
+			AllAnimations.Add(static_cast<int>(Pair.Key), Pair.Value);
+		}
+	}
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -71,14 +80,20 @@ protected:
 
 
 
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
+		float BaseTurnRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
+		float BaseLookUpRate;
 
 private:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(Category = "GameModeValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int AniState = 0;
@@ -86,11 +101,6 @@ private:
 	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		TMap<int, class UAnimMontage*> AllAnimations;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
-		float BaseTurnRate;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
-		float BaseLookUpRate;
 
 	class UGlobalAnimInstance* GlobalAnimInstance = nullptr;
 
