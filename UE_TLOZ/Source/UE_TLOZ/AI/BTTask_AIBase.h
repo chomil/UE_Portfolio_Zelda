@@ -8,6 +8,7 @@
 #include <AI/AIMonCon.h>
 #include <Global/Data/StateEnums.h>
 #include <BehaviorTree/BlackboardComponent.h>
+#include "GameFramework/CharacterMovementComponent.h"
 #include "BTTask_AIBase.generated.h"
 /**
  * 

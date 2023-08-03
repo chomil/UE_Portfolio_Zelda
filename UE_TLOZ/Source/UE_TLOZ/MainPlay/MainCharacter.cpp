@@ -106,24 +106,27 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_Dash", EKeys::LeftShift, 1.f));
 
 
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_Turn", EKeys::MouseX, 1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_LookUp", EKeys::MouseY, -1.f));
+		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_Turn", EKeys::MouseX, 0.5f));
+		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_LookUp", EKeys::MouseY, -0.5f));
 
 
 		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_Jump", EKeys::SpaceBar));
-		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_Click", EKeys::LeftMouseButton));
+		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_LClick", EKeys::LeftMouseButton));
+		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_RClick", EKeys::RightMouseButton));
 
 
 	}
 
 	PlayerInputComponent->BindAxis("Player_MoveForward", this, &AMainCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Player_MoveRight", this, &AMainCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Player_Turn", this, &AMainCharacter::TurnCamera);
-	PlayerInputComponent->BindAxis("Player_LookUp", this, &AMainCharacter::LookUpCamera);
+	PlayerInputComponent->BindAxis("Player_Turn", this, &AMainCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Player_LookUp", this, &AMainCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Player_Dash", this, &AMainCharacter::Dash);
 
 	PlayerInputComponent->BindAction("Player_Jump", EInputEvent::IE_Pressed, this, &AMainCharacter::PlayerJump);
-	PlayerInputComponent->BindAction("Player_Click", EInputEvent::IE_Pressed, this, &AMainCharacter::Attack);
+	PlayerInputComponent->BindAction("Player_LClick", EInputEvent::IE_Pressed, this, &AMainCharacter::Attack);
+	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Pressed, this, &AMainCharacter::BowAttackStart);
+	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Released, this, &AMainCharacter::BowAttackEnd);
 
 }
 
@@ -338,17 +341,19 @@ void AMainCharacter::Attack()
 	}
 }
 
-void AMainCharacter::TurnCamera(float Val)
+void AMainCharacter::BowAttackStart()
 {
-	AddControllerYawInput(Val * 0.5f);
+	aniState = PLAYER_ANISTATE::SWORD_ON;
+	ChangeWeaponSocket(WeaponPtr, "Sword_Wait");
+	ChangeWeaponSocket(BowPtr, "Weapon_L");
 }
 
-void AMainCharacter::LookUpCamera(float Val)
+void AMainCharacter::BowAttackEnd()
 {
-	AddControllerPitchInput(Val * 0.5f);
+
 }
 
-bool AMainCharacter::GetRightHandBlending()
+float AMainCharacter::GetRightHandBlending()
 {
 	switch (aniState)
 	{
@@ -360,12 +365,12 @@ bool AMainCharacter::GetRightHandBlending()
 	case PLAYER_ANISTATE::JUMP:
 		if (bEquipSword)
 		{
-			return true;
+			return 1.0f;
 		}
 	default:
-		return false;
+		return 0.0f;
 	}
-	return false;
+	return 0.0f;
 }
 
 void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName)
@@ -380,5 +385,13 @@ void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _Sock
 	else if (_SocketName == FName("Weapon_R"))
 	{
 		bEquipSword = true;
+	}
+	else if (_SocketName == FName("Bow_Wait"))
+	{
+		bEquipBow = false;
+	}
+	else if (_SocketName == FName("Weapon_L"))
+	{
+		bEquipBow = true;
 	}
 }

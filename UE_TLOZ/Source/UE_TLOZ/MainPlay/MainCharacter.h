@@ -39,12 +39,11 @@ public:
 	void PlayerJump();
 
 	void Attack();
-
-	void TurnCamera(float Val);
-	void LookUpCamera(float Val);
+	void BowAttackStart();
+	void BowAttackEnd();
 
 	UFUNCTION(BlueprintCallable)
-	bool GetRightHandBlending();
+	float GetRightHandBlending();
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn")
@@ -67,6 +66,7 @@ public:
 	FVector vInputDir = FVector::ZeroVector;
 	bool bIsDash = false;
 	bool bEquipSword = false;
+	bool bEquipBow = false;
 
 
 	void ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName);

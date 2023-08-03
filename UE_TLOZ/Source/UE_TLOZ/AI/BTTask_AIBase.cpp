@@ -17,30 +17,30 @@ void UBTTask_AIBase::OnGameplayTaskActivated(class UGameplayTask&)
 
 float UBTTask_AIBase::GetStateTime(UBehaviorTreeComponent& OwnerComp)
 {
-	UBlackboardComponent* BlockBoard = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
 
-	if (nullptr == BlockBoard)
+	if (nullptr == BlackBoard)
 	{
-		UE_LOG(LogTemp, Error, TEXT("if (nullptr == BlockBoard)"), __FUNCTION__, __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
 		return 0.0f;
 	}
 
-	float StateTime = BlockBoard->GetValueAsFloat(TEXT("StateTime"));
+	float StateTime = BlackBoard->GetValueAsFloat(TEXT("StateTime"));
 
 	return StateTime;
 }
 
 MONSTER_AISTATE UBTTask_AIBase::GetAiState(UBehaviorTreeComponent& OwnerComp)
 {
-	UBlackboardComponent* BlockBoard = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
 
-	if (nullptr == BlockBoard)
+	if (nullptr == BlackBoard)
 	{
-		UE_LOG(LogTemp, Error, TEXT("if (nullptr == BlockBoard)"), __FUNCTION__, __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
 		return MONSTER_AISTATE::NONE;
 	}
 
-	uint8 Enum = BlockBoard->GetValueAsEnum(TEXT("AIState"));
+	uint8 Enum = BlackBoard->GetValueAsEnum(TEXT("AIState"));
 
 	return static_cast<MONSTER_AISTATE>(Enum);
 
@@ -48,15 +48,15 @@ MONSTER_AISTATE UBTTask_AIBase::GetAiState(UBehaviorTreeComponent& OwnerComp)
 
 void UBTTask_AIBase::ResetStateTime(UBehaviorTreeComponent& OwnerComp)
 {
-	UBlackboardComponent* BlockBoard = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
 
-	if (nullptr == BlockBoard)
+	if (nullptr == BlackBoard)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlockBoard)"), __FUNCTION__, __LINE__);
 		return;
 	}
 
-	BlockBoard->SetValueAsFloat(TEXT("StateTime"), 0.0f);
+	BlackBoard->SetValueAsFloat(TEXT("StateTime"), 0.0f);
 }
 
 AGlobalCharacter* UBTTask_AIBase::GetGlobalCharacter(UBehaviorTreeComponent& OwnerComp)
@@ -81,33 +81,35 @@ AGlobalCharacter* UBTTask_AIBase::GetGlobalCharacter(UBehaviorTreeComponent& Own
 
 UBlackboardComponent* UBTTask_AIBase::GetBlackboardComponent(UBehaviorTreeComponent& OwnerComp)
 {
-	UBlackboardComponent* BlockBoard = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
 
-	if (nullptr == BlockBoard)
+	if (nullptr == BlackBoard)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlockBoard)"), __FUNCTION__, __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
 		return nullptr;
 	}
 
-	return BlockBoard;
+	return BlackBoard;
 }
 
 EBTNodeResult::Type UBTTask_AIBase::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	GetGlobalCharacter(OwnerComp)->SetAniState(GetAiState(OwnerComp));
+
 	return EBTNodeResult::Type::InProgress;
 }
 
 void UBTTask_AIBase::SetStateChange(UBehaviorTreeComponent& OwnerComp, uint8 _State)
 {
-	UBlackboardComponent* BlockBoard = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
 
-	if (nullptr == BlockBoard)
+	if (nullptr == BlackBoard)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlockBoard)"), __FUNCTION__, __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
 		return;
 	}
 
-	BlockBoard->SetValueAsEnum(TEXT("AIState"), _State);
+	BlackBoard->SetValueAsEnum(TEXT("AIState"), _State);
 
 	ResetStateTime(OwnerComp);
 
@@ -117,17 +119,17 @@ void UBTTask_AIBase::SetStateChange(UBehaviorTreeComponent& OwnerComp, uint8 _St
 
 void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
-	UBlackboardComponent* BlockBoard = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
 
-	if (nullptr == BlockBoard)
+	if (nullptr == BlackBoard)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlockBoard)"), __FUNCTION__, __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
 		return;
 	}
 
-	float StateTime = BlockBoard->GetValueAsFloat(TEXT("StateTime"));
+	float StateTime = BlackBoard->GetValueAsFloat(TEXT("StateTime"));
 	StateTime += DelataSeconds;
-	BlockBoard->SetValueAsFloat(TEXT("StateTime"), StateTime);
+	BlackBoard->SetValueAsFloat(TEXT("StateTime"), StateTime);
 }
 
 

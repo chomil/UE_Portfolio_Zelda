@@ -28,4 +28,7 @@ public:
 protected:
 	void NativeBeginPlay() override;
 	void NativeUpdateAnimation(float _DeltaTime) override;
+
+private:
+	class UAnimMontage* CurMontage = nullptr;
 };

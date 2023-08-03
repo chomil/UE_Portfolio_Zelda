@@ -13,15 +13,18 @@ void AMonster::BeginPlay()
 	if (nullptr != Inst)
 	{
 		CurMonsterData = Inst->GetMonsterData(DataName);
-
-		SetAllAnimation(CurMonsterData->MapAnimation);
-		SetAniState(MONSTER_AISTATE::DEATH);
+		
+		SetAllAnimation<MONSTER_AISTATE>(CurMonsterData->MapAnimation);
+		SetAniState<MONSTER_AISTATE>(MONSTER_AISTATE::IDLE);
 	}
 
 	Super::BeginPlay();
 
-	GetBlackboardComponent()->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(MONSTER_AISTATE::IDLE));
+
+	GetBlackboardComponent()->SetValueAsEnum(TEXT("AIState"), static_cast<int>(MONSTER_AISTATE::IDLE));
 	GetBlackboardComponent()->SetValueAsString(TEXT("TargetTag"), TEXT("Player"));
-	GetBlackboardComponent()->SetValueAsFloat(TEXT("SearchRange"), 1500.0f);
-	GetBlackboardComponent()->SetValueAsFloat(TEXT("AttackRange"), 200.0f);
+	GetBlackboardComponent()->SetValueAsFloat(TEXT("SearchRange"), 1200.0f);
+	GetBlackboardComponent()->SetValueAsFloat(TEXT("AttackRange"), 120.0f);
+	FVector Pos = GetActorLocation();
+	GetBlackboardComponent()->SetValueAsVector(TEXT("OriginPos"), Pos);
 }

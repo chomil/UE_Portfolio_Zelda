@@ -38,6 +38,12 @@ void UGlobalAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 
 	if (false == Montage_IsPlaying(Montage))
 	{
+		if (Montage == CurMontage && Montage->bLoop == true)
+		{
+			return;
+		}
+
+		CurMontage = Montage;
 		Montage_Play(Montage, 1.0f);
 	}
 }

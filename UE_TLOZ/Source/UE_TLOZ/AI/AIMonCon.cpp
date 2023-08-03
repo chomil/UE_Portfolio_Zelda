@@ -5,10 +5,10 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include <Global/AICharacter.h>
 
 AAIMonCon::AAIMonCon()
 {
-
 	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));;
@@ -21,21 +21,26 @@ void AAIMonCon::OnPossess(APawn* _InPawn)
 
 	if (nullptr != BehaviorTreeComponent && true == BehaviorTreeComponent->IsValidLowLevel())
 	{
-		//AAICharacter* AIPawn = Cast<AAICharacter>(_InPawn);
+		AAICharacter* AIPawn = Cast<AAICharacter>(_InPawn);
 
-		//UBehaviorTree* BehaviorTree = AIPawn->GetBehaviorTree();
+		if (AIPawn == nullptr)
+		{
+			return;
+		}
 
-		//if (nullptr == BehaviorTree || false == BehaviorTree->IsValidLowLevel())
-		//{
-		//	UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BehaviorTree || false == BehaviorTree->IsValidLowLevel())"), __FUNCTION__, __LINE__);
-		//	return;
-		//}
+		UBehaviorTree* BehaviorTree = AIPawn->GetBehaviorTree();
 
-		//BlackboardComponent->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+		if (nullptr == BehaviorTree || false == BehaviorTree->IsValidLowLevel())
+		{
+			UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BehaviorTree || false == BehaviorTree->IsValidLowLevel())"), __FUNCTION__, __LINE__);
+			return;
+		}
 
-		//BlackboardComponent->SetValueAsObject(TEXT("SelfActor"), _InPawn);
+		BlackboardComponent->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 
-		//BehaviorTreeComponent->StartTree(*BehaviorTree);
+		BlackboardComponent->SetValueAsObject(TEXT("SelfActor"), _InPawn);
+
+		BehaviorTreeComponent->StartTree(*BehaviorTree);
 	}
 
 }

@@ -41,10 +41,10 @@ void UZeldaAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("PrevState %d"), (int)aniState);
+	//UE_LOG(LogTemp, Log, TEXT("PrevState %d"), (int)aniState);
 	aniState = Chracter->aniState;
 
-	UE_LOG(LogTemp, Log, TEXT("NextState %d"), (int)aniState);
+	//UE_LOG(LogTemp, Log, TEXT("NextState %d"), (int)aniState);
 	class UAnimMontage* Montage = AllAnimations[aniState];
 
 	if (nullptr == Montage)
