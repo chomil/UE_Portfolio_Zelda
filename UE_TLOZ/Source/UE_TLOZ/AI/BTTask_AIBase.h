@@ -9,6 +9,7 @@
 #include <Global/Data/StateEnums.h>
 #include <BehaviorTree/BlackboardComponent.h>
 #include "GameFramework/CharacterMovementComponent.h"
+#include <Global/GlobalStatic.h>
 #include "BTTask_AIBase.generated.h"
 /**
  * 

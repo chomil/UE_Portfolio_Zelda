@@ -19,6 +19,7 @@ void UBTTask_DEATH::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 
 	if (Time <= GetStateTime(OwnerComp))
 	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::CHASE);
+		//사라지기
+		return;
 	}
 }

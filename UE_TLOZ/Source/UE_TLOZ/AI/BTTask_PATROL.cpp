@@ -20,5 +20,6 @@ void UBTTask_PATROL::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	if (Time <= GetStateTime(OwnerComp))
 	{
 		SetStateChange(OwnerComp, MONSTER_AISTATE::CHASE);
+		return;
 	}
 }

@@ -20,7 +20,7 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
-	GetCharacterMovement()->MaxWalkSpeed = 250.f;
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 }
 
 // Called when the game starts or when spawned
@@ -251,7 +251,7 @@ void AMainCharacter::Dash(float Val)
 		if (bIsDash == false)
 		{
 			bIsDash = true;
-			GetCharacterMovement()->MaxWalkSpeed = 400.f;
+			GetCharacterMovement()->MaxWalkSpeed = 450.f;
 		}
 	}
 	else
@@ -259,7 +259,7 @@ void AMainCharacter::Dash(float Val)
 		if (bIsDash == true)
 		{
 			bIsDash = false;
-			GetCharacterMovement()->MaxWalkSpeed = 250.f;
+			GetCharacterMovement()->MaxWalkSpeed = 300.f;
 		}
 	}
 }
@@ -343,9 +343,12 @@ void AMainCharacter::Attack()
 
 void AMainCharacter::BowAttackStart()
 {
-	aniState = PLAYER_ANISTATE::SWORD_ON;
-	ChangeWeaponSocket(WeaponPtr, "Sword_Wait");
-	ChangeWeaponSocket(BowPtr, "Weapon_L");
+	if (bEquipSword)
+	{
+		aniState = PLAYER_ANISTATE::SWORD_ON;
+		ChangeWeaponSocket(WeaponPtr, "Sword_Wait");
+	}
+	//ChangeWeaponSocket(BowPtr, "Weapon_L");
 }
 
 void AMainCharacter::BowAttackEnd()
@@ -355,6 +358,7 @@ void AMainCharacter::BowAttackEnd()
 
 float AMainCharacter::GetRightHandBlending()
 {
+
 	switch (aniState)
 	{
 	case PLAYER_ANISTATE::IDLE:
@@ -363,14 +367,14 @@ float AMainCharacter::GetRightHandBlending()
 	case PLAYER_ANISTATE::DASH:
 	case PLAYER_ANISTATE::LAND:
 	case PLAYER_ANISTATE::JUMP:
-		if (bEquipSword)
-		{
-			return 1.0f;
-		}
+	if (bEquipSword)
+	{
+		return 1.0f;
+	}
+	return 0.0f;
 	default:
 		return 0.0f;
 	}
-	return 0.0f;
 }
 
 void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName)

@@ -11,7 +11,7 @@ EBTNodeResult::Type UBTTask_CHASE::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
 	if (nullptr != MoveCom)
 	{
-		MoveCom->MaxWalkSpeed = 200.0f;
+		MoveCom->MaxWalkSpeed = 300.0f;
 	}
 
 	return EBTNodeResult::Type::InProgress;
@@ -19,6 +19,8 @@ EBTNodeResult::Type UBTTask_CHASE::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
 void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
+	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
+
 	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
 	AActor* TargetActor = Cast<AActor>(TargetObject);
 
@@ -29,7 +31,7 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		return;
 	}
 
-	float Dot;
+	float Degree = 0.f;
 	//회전
 	{
 		FVector TargetPos = TargetActor->GetActorLocation();
@@ -44,11 +46,11 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		ThisForward.Normalize();
 
 		FVector Cross = FVector::CrossProduct(ThisForward, Dir);
-		Dot = FVector::DotProduct(ThisForward, Dir);
 		float Angle0 = Dir.Rotation().Yaw;
 		float Angle1 = ThisForward.Rotation().Yaw;
+		Degree = Angle0 - Angle1;
 
-		if (FMath::Abs(Angle0 - Angle1) >= 5.0f)
+		if (FMath::Abs(Degree) >= 5.0f)
 		{
 			FRotator Rot = FRotator::MakeFromEuler({ 0, 0, Cross.Z * 500.0f * DelataSeconds });
 			GetGlobalCharacter(OwnerComp)->AddActorWorldRotation(Rot);
@@ -86,19 +88,37 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		//	return;
 		//}
 
-		if (SearchRange < Dir.Size())
+		if (SearchRange * 1.2f < Dir.Size())
 		{
 			SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
 			return;
 		}
 
 		// 충분히 근접했다.
-		if (AttackRange >= Dir.Size())
+		if (Dir.Size() <= AttackRange)
 		{
 			//+-30도 이내면 공격 
-			if (Dot > cosf(30.f/180.f*3.14f))
+			if (FMath::Abs(Degree) < 30.f)
 			{
-				SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK);
+				int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 3);
+				if (RandomInt == 1)
+				{
+					SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_STRONG);
+				}
+				else
+				{
+					SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK);
+				}
+				return;
+			}
+		}
+		else if (AttackRange * 2 <= Dir.Size() && Dir.Size() <= AttackRange * 4)
+		{
+			//랜덤으로 점프공격
+			int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 100);
+			if (RandomInt == 1)
+			{
+				SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_JUMP_START);
 				return;
 			}
 		}

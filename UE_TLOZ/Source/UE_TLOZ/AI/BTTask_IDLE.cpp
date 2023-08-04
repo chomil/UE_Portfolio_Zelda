@@ -27,8 +27,30 @@ void UBTTask_IDLE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	if (nullptr != ResultActor)
 	{
 		GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), ResultActor);
-		SetStateChange(OwnerComp, MONSTER_AISTATE::CHASE);
-		return;
+
+
+		FVector Dist = ResultActor->GetActorLocation() - GetGlobalCharacter(OwnerComp)->GetActorLocation();
+		Dist.Z = 0;
+		FVector Forward = GetGlobalCharacter(OwnerComp)->GetActorForwardVector();
+		Forward.Z = 0;
+		float TargetDegree = Dist.Rotation().Yaw - Forward.Rotation().Yaw;
+
+		//서칭거리 내 +-80도 이내에 존재하면
+		if (FMath::Abs(TargetDegree) < 80.f)
+		{
+			SetStateChange(OwnerComp, MONSTER_AISTATE::FIND);
+			return;
+		}
+		else
+		{
+			//각도 안에 안들어와도 서칭거리 절반 이하로 가까워지면
+			float Range = GetBlackboardComponent(OwnerComp)->GetValueAsFloat(TEXT("SearchRange"));
+			if (Dist.Size() < Range * 0.5f) 
+			{
+				SetStateChange(OwnerComp, MONSTER_AISTATE::FIND);
+				return;
+			}
+		}
 	}
 
 	return;
