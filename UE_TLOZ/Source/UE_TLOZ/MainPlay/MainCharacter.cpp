@@ -21,11 +21,17 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
+
+	Tags.Add(TEXT("Player"));
 }
 
 // Called when the game starts or when spawned
 void AMainCharacter::BeginPlay()
 {
+
+	SetAllAnimation(PlayerAllAnimations);
+	SetAniState(PLAYER_ANISTATE::IDLE);
+
 	Super::BeginPlay();
 
 
@@ -37,6 +43,11 @@ void AMainCharacter::BeginPlay()
 
 	AGamePlayMode* GamePlayMode = Cast<AGamePlayMode>(GameModePtr);
 	PlayMode = GamePlayMode;
+
+
+	GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &AMainCharacter::MontageEnd);
+
+	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::BeginWeaponOverLap);
 	
 }
 
@@ -52,18 +63,18 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 
 
-	switch (aniState)
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::JUMP:		
 		if (JumpCurrentCount == 0)
 		{
 			if (vInputDir.IsZero())
 			{
-				aniState = PLAYER_ANISTATE::LAND;
+				SetAniState(PLAYER_ANISTATE::LAND);
 			}
 			else
 			{
-				aniState = PLAYER_ANISTATE::RUN;
+				SetAniState(PLAYER_ANISTATE::RUN);
 			}
 		}
 		break;
@@ -124,7 +135,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("Player_Dash", this, &AMainCharacter::Dash);
 
 	PlayerInputComponent->BindAction("Player_Jump", EInputEvent::IE_Pressed, this, &AMainCharacter::PlayerJump);
-	PlayerInputComponent->BindAction("Player_LClick", EInputEvent::IE_Pressed, this, &AMainCharacter::Attack);
+	PlayerInputComponent->BindAction("Player_LClick", EInputEvent::IE_Pressed, this, &AMainCharacter::AttackAction);
 	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Pressed, this, &AMainCharacter::BowAttackStart);
 	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Released, this, &AMainCharacter::BowAttackEnd);
 
@@ -134,7 +145,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AMainCharacter::MoveRight(float Val)
 {
 	vInputDir.Y = Val;
-	switch (aniState)
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::JUMP:
 	case PLAYER_ANISTATE::LAND:
@@ -145,6 +156,8 @@ void AMainCharacter::MoveRight(float Val)
 	case PLAYER_ANISTATE::ATTACK_DASH:
 	case PLAYER_ANISTATE::SWORD_ON:
 	case PLAYER_ANISTATE::SWORD_OFF:
+	case PLAYER_ANISTATE::HIT_S:
+	case PLAYER_ANISTATE::HIT_M:
 		return;
 	default:
 		break;
@@ -154,11 +167,11 @@ void AMainCharacter::MoveRight(float Val)
 	{
 		if (bIsDash == true)
 		{
-			aniState = PLAYER_ANISTATE::DASH;
+			SetAniState(PLAYER_ANISTATE::DASH);
 		}
 		else
 		{
-			aniState = PLAYER_ANISTATE::RUN;
+			SetAniState(PLAYER_ANISTATE::RUN);
 		}
 
 		// find out which way is forward
@@ -175,7 +188,7 @@ void AMainCharacter::MoveRight(float Val)
 	{
 		if (vInputDir.IsZero())
 		{
-			aniState = PLAYER_ANISTATE::IDLE;
+			SetAniState(PLAYER_ANISTATE::IDLE);
 		}
 	}
 }
@@ -183,7 +196,7 @@ void AMainCharacter::MoveRight(float Val)
 void AMainCharacter::MoveForward(float Val)
 {
 	vInputDir.X = Val;
-	switch (aniState)
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::JUMP:
 	case PLAYER_ANISTATE::LAND:
@@ -194,6 +207,8 @@ void AMainCharacter::MoveForward(float Val)
 	case PLAYER_ANISTATE::ATTACK_DASH:
 	case PLAYER_ANISTATE::SWORD_ON:
 	case PLAYER_ANISTATE::SWORD_OFF:
+	case PLAYER_ANISTATE::HIT_S:
+	case PLAYER_ANISTATE::HIT_M:
 		return;
 	default:
 		break;
@@ -203,11 +218,11 @@ void AMainCharacter::MoveForward(float Val)
 	{
 		if (bIsDash == true)
 		{
-			aniState = PLAYER_ANISTATE::DASH;
+			SetAniState(PLAYER_ANISTATE::DASH);
 		}
 		else
 		{
-			aniState = PLAYER_ANISTATE::RUN;
+			SetAniState(PLAYER_ANISTATE::RUN);
 		}
 
 		// find out which way is forward
@@ -224,14 +239,14 @@ void AMainCharacter::MoveForward(float Val)
 	{
 		if (vInputDir.IsZero())
 		{
-			aniState = PLAYER_ANISTATE::IDLE;
+			SetAniState(PLAYER_ANISTATE::IDLE);
 		}
 	}
 }
 
 void AMainCharacter::Dash(float Val)
 {
-	switch (aniState)
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::JUMP:
 	case PLAYER_ANISTATE::LAND:
@@ -242,6 +257,8 @@ void AMainCharacter::Dash(float Val)
 	case PLAYER_ANISTATE::ATTACK_DASH:
 	case PLAYER_ANISTATE::SWORD_ON:
 	case PLAYER_ANISTATE::SWORD_OFF:
+	case PLAYER_ANISTATE::HIT_S:
+	case PLAYER_ANISTATE::HIT_M:
 		return;
 	default:
 		break;
@@ -267,37 +284,37 @@ void AMainCharacter::Dash(float Val)
 
 void AMainCharacter::PlayerJump()
 {
-	if (aniState == PLAYER_ANISTATE::JUMP || aniState == PLAYER_ANISTATE::LAND)
+	if (GetAniState() == (int)PLAYER_ANISTATE::JUMP || GetAniState() == (int)PLAYER_ANISTATE::LAND)
 	{
 		return;
 	}
 
-	aniState = PLAYER_ANISTATE::JUMP;
+	SetAniState(PLAYER_ANISTATE::JUMP);
 	Jump();
 }
 
-void AMainCharacter::Attack()
+void AMainCharacter::AttackAction()
 {
-	switch (aniState)
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::DASH:
 		GetCharacterMovement()->GroundFriction = 0;
 		GetCharacterMovement()->AddImpulse(GetActorForwardVector() * 500, true);
-		aniState = PLAYER_ANISTATE::ATTACK_DASH;
-		ChangeWeaponSocket(WeaponPtr, "Weapon_R");
+		SetAniState(PLAYER_ANISTATE::ATTACK_DASH);
+		ChangeWeaponSocket(WeaponComponent, "Weapon_R");
 		break;
 	case PLAYER_ANISTATE::IDLE:
 	case PLAYER_ANISTATE::RUN:
 	{
 		if (bEquipSword == false)
 		{
-			aniState = PLAYER_ANISTATE::SWORD_ON;
-			ChangeWeaponSocket(WeaponPtr, "Weapon_R");
+			SetAniState(PLAYER_ANISTATE::SWORD_ON);
+			ChangeWeaponSocket(WeaponComponent, "Weapon_R");
 			break;
 		}
 		else
 		{
-			aniState = PLAYER_ANISTATE::ATTACK1;
+			SetAniState(PLAYER_ANISTATE::ATTACK1);
 			break;
 		}
 	}
@@ -305,35 +322,35 @@ void AMainCharacter::Attack()
 		if (fComboTime > 0.3f)
 		{
 			fComboTime = 0.f;
-			aniState = PLAYER_ANISTATE::ATTACK2;
+			SetAniState(PLAYER_ANISTATE::ATTACK2);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK2:
 		if (fComboTime > 0.3f)
 		{
 			fComboTime = 0.f;
-			aniState = PLAYER_ANISTATE::ATTACK3;
+			SetAniState(PLAYER_ANISTATE::ATTACK3);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK3:
 		if (fComboTime > 0.3f)
 		{
 			fComboTime = 0.f;
-			aniState = PLAYER_ANISTATE::ATTACK4;
+			SetAniState(PLAYER_ANISTATE::ATTACK4);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK4:
 		if (fComboTime > 0.9f)
 		{
 			fComboTime = 0.f;
-			aniState = PLAYER_ANISTATE::ATTACK1;
+			SetAniState(PLAYER_ANISTATE::ATTACK1);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK_DASH:
 		if (fComboTime > 0.6f)
 		{
 			fComboTime = 0.f;
-			aniState = PLAYER_ANISTATE::ATTACK1;
+			SetAniState(PLAYER_ANISTATE::ATTACK1);
 			break;
 		}
 	default:
@@ -345,8 +362,8 @@ void AMainCharacter::BowAttackStart()
 {
 	if (bEquipSword)
 	{
-		aniState = PLAYER_ANISTATE::SWORD_ON;
-		ChangeWeaponSocket(WeaponPtr, "Sword_Wait");
+		SetAniState(PLAYER_ANISTATE::SWORD_ON);
+		ChangeWeaponSocket(WeaponComponent, "Sword_Wait");
 	}
 	//ChangeWeaponSocket(BowPtr, "Weapon_L");
 }
@@ -359,7 +376,7 @@ void AMainCharacter::BowAttackEnd()
 float AMainCharacter::GetRightHandBlending()
 {
 
-	switch (aniState)
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
 	case PLAYER_ANISTATE::WALK:
@@ -374,6 +391,28 @@ float AMainCharacter::GetRightHandBlending()
 	return 0.0f;
 	default:
 		return 0.0f;
+	}
+}
+
+void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)
+{
+	if (_Inter == false)
+	{
+		if (GetAnimMontage(PLAYER_ANISTATE::LAND) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::ATTACK1) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::ATTACK2) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::ATTACK3) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::ATTACK4) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::ATTACK_DASH) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::SWORD_ON) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::SWORD_OFF) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::HIT_S) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::HIT_M) == Anim)
+		{
+			SetAniState(PLAYER_ANISTATE::IDLE);
+
+			GetMesh()->GetAnimInstance()->Montage_Play(GetAnimMontage(PLAYER_ANISTATE::IDLE), 1.0f);
+		}
 	}
 }
 
@@ -397,5 +436,35 @@ void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _Sock
 	else if (_SocketName == FName("Weapon_L"))
 	{
 		bEquipBow = true;
+	}
+}
+
+void AMainCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)
+{
+	Super::Damaged(_Damage, _AttackCharacter);
+
+	SetAniState(PLAYER_ANISTATE::HIT_M);
+}
+
+void AMainCharacter::BeginWeaponOverLap(
+	UPrimitiveComponent* OverlappedComponent, 
+	AActor* OtherActor, 
+	UPrimitiveComponent* OtherComp, 
+	int32 OtherBodyIndex, 
+	bool bFromSweep, 
+	const FHitResult& SweepResult)
+{
+	if (OtherActor->ActorHasTag(TEXT("Monster")))
+	{
+		PLAYER_ANISTATE Ani = static_cast<PLAYER_ANISTATE>(GetAniState());
+		if (PLAYER_ANISTATE::ATTACK1 == Ani ||
+			PLAYER_ANISTATE::ATTACK2 == Ani ||
+			PLAYER_ANISTATE::ATTACK3 == Ani ||
+			PLAYER_ANISTATE::ATTACK4 == Ani ||
+			PLAYER_ANISTATE::ATTACK_DASH == Ani)
+		{
+			AGlobalCharacter* Mon = Cast<AGlobalCharacter>(OtherActor);
+			Attacked(1.0f, Mon);
+		}
 	}
 }

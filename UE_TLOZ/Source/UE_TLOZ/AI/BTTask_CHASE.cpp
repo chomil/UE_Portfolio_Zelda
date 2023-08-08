@@ -20,6 +20,16 @@ EBTNodeResult::Type UBTTask_CHASE::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
+	if (Dead(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
+		return;
+	}
+	if (Damaged(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
+		return;
+	}
 
 	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
 	AActor* TargetActor = Cast<AActor>(TargetObject);
@@ -27,38 +37,16 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	//플레이어 놓침
 	if (nullptr == TargetActor)
 	{
-		//SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
+		GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
+		SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
 		return;
 	}
 
-	float Degree = 0.f;
+	float TargetLookAngle = GetTargetAngle(OwnerComp);
+
 	//회전
 	{
-		FVector TargetPos = TargetActor->GetActorLocation();
-		FVector ThisPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
-		TargetPos.Z = 0.0f;
-		ThisPos.Z = 0.0f;
-
-		FVector Dir = TargetPos - ThisPos;
-		Dir.Normalize();
-
-		FVector ThisForward = GetGlobalCharacter(OwnerComp)->GetActorForwardVector();
-		ThisForward.Normalize();
-
-		FVector Cross = FVector::CrossProduct(ThisForward, Dir);
-		float Angle0 = Dir.Rotation().Yaw;
-		float Angle1 = ThisForward.Rotation().Yaw;
-		Degree = Angle0 - Angle1;
-
-		if (FMath::Abs(Degree) >= 5.0f)
-		{
-			FRotator Rot = FRotator::MakeFromEuler({ 0, 0, Cross.Z * 500.0f * DelataSeconds });
-			GetGlobalCharacter(OwnerComp)->AddActorWorldRotation(Rot);
-		}
-		else {
-			FRotator Rot = Dir.Rotation();
-			GetGlobalCharacter(OwnerComp)->SetActorRotation(Rot);
-		}
+		LookTarget(OwnerComp, DelataSeconds);
 	}
 
 
@@ -80,16 +68,18 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		OriginPos.Z = 0.0f;
 		FVector OriginDir = OriginPos - PawnPos;
 
-		//if (OriginDir.Size() >= SearchRange * 1.5f)
-		//{
-		//	GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
-		//	SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
-		//	int a = 0;
-		//	return;
-		//}
+		//시작 위치로부터 멀어지면
+		if (OriginDir.Size() >= SearchRange * 5.f)
+		{
+			//GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
+			//SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
+			//return;
+		}
 
+		//타깃과 멀어지면
 		if (SearchRange * 1.2f < Dir.Size())
 		{
+			GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
 			SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
 			return;
 		}
@@ -98,7 +88,7 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		if (Dir.Size() <= AttackRange)
 		{
 			//+-30도 이내면 공격 
-			if (FMath::Abs(Degree) < 30.f)
+			if (FMath::Abs(TargetLookAngle) < 30.f)
 			{
 				int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 3);
 				if (RandomInt == 1)

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include <Global/GlobalCharacter.h>
 #include <Global/Data/StateEnums.h>
 #include "MainCharacter.generated.h"
 
@@ -11,7 +11,7 @@
 
 
 UCLASS()
-class UE_TLOZ_API AMainCharacter : public ACharacter
+class UE_TLOZ_API AMainCharacter : public AGlobalCharacter
 {
 	GENERATED_BODY()
 
@@ -38,28 +38,25 @@ public:
 
 	void PlayerJump();
 
-	void Attack();
+	void AttackAction();
 	void BowAttackStart();
 	void BowAttackEnd();
 
 	UFUNCTION(BlueprintCallable)
 	float GetRightHandBlending();
 
-	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn")
-		float BaseTurnRate;
-
-	/** Base lookup rate, in deg/sec. Other scaling may affect final lookup rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn")
-		float BaseLookUpRate;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	PLAYER_ANISTATE aniState = PLAYER_ANISTATE::IDLE;
+	UFUNCTION()
+	void MontageEnd(UAnimMontage* Anim, bool _Inter);
 
 
 	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
-	TMap<PLAYER_ANISTATE, class UAnimMontage*> AllAnimations;
+	PLAYER_ANISTATE PlayerAniState = PLAYER_ANISTATE::IDLE;
+
+
+	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
+	TMap<PLAYER_ANISTATE, class UAnimMontage*> PlayerAllAnimations;
 
 
 public:
@@ -72,15 +69,27 @@ public:
 	void ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName);
 
 	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* WeaponPtr;
+	UStaticMeshComponent* WeaponComponent;
 
 
 	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* BowPtr;
+	USkeletalMeshComponent* BowComponent;
+
+protected:
+	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;
 	float fComboTime = 0.f;
 
 
+	UFUNCTION()
+		void BeginWeaponOverLap(
+			UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex,
+			bool bFromSweep,
+			const FHitResult& SweepResult
+		);
 };

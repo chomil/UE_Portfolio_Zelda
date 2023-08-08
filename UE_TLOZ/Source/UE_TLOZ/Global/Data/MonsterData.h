@@ -20,10 +20,10 @@ struct UE_TLOZ_API FMonsterData : public FTableRowBase
 	~FMonsterData() {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-		int HP;
+		float HP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-		int ATT;
+		float ATT;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 		class UBehaviorTree* AI;

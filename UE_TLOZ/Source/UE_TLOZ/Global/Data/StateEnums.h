@@ -17,7 +17,9 @@ enum class PLAYER_ANISTATE : uint8
 	ATTACK4,
 	ATTACK_DASH,
 	SWORD_ON,
-	SWORD_OFF
+	SWORD_OFF,
+	HIT_S,
+	HIT_M
 };
 
 

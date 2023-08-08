@@ -8,7 +8,6 @@ void UZeldaAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
-
 	OnMontageBlendingOut.AddDynamic(this, &UZeldaAnimInstance::MontageEnd);
 
 	
@@ -20,7 +19,10 @@ void UZeldaAnimInstance::NativeBeginPlay()
 		return;
 	}
 
-	AllAnimations = Chracter->AllAnimations;
+	for (auto pair : Chracter->PlayerAllAnimations)
+	{
+		AllAnimations.Add((PLAYER_ANISTATE)pair.Key, pair.Value);
+	}
 }
 
 
@@ -42,7 +44,7 @@ void UZeldaAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 	}
 
 	//UE_LOG(LogTemp, Log, TEXT("PrevState %d"), (int)aniState);
-	aniState = Chracter->aniState;
+	aniState = static_cast<PLAYER_ANISTATE>(Chracter->GetAniState());
 
 	//UE_LOG(LogTemp, Log, TEXT("NextState %d"), (int)aniState);
 	class UAnimMontage* Montage = AllAnimations[aniState];
@@ -90,7 +92,7 @@ void UZeldaAnimInstance::MontageEnd(UAnimMontage* Anim, bool _Inter)
 		{
 
 			aniState = PLAYER_ANISTATE::IDLE;
-			Chracter->aniState = aniState;
+			Chracter->SetAniState(aniState);
 			Montage_Play(AllAnimations[aniState], 1.0f);
 		}
 	}

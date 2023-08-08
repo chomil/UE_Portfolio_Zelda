@@ -12,6 +12,17 @@ AGlobalCharacter::AGlobalCharacter()
 
 }
 
+void AGlobalCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)
+{
+	HP -= _Damage;
+	HP = HP < 0 ? 0 : HP;
+}
+
+void AGlobalCharacter::Attacked(float _Damage, AGlobalCharacter* _HitCharacter)
+{
+	_HitCharacter->Damaged(_Damage, this);
+}
+
 // Called when the game starts or when spawned
 void AGlobalCharacter::BeginPlay()
 {

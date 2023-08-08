@@ -10,7 +10,7 @@ void UGlobalAnimInstance::NativeBeginPlay()
 	OnMontageBlendingOut.AddDynamic(this, &UGlobalAnimInstance::MontageEnd);
 }
 
-// 시작할때 한번 업데이트를 돌려주므로.
+// 시작할때 한번 업데이트
 void UGlobalAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 {
 	Super::NativeUpdateAnimation(_DeltaTime);
@@ -22,7 +22,7 @@ void UGlobalAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 
 	AGlobalCharacter* Chracter = Cast<AGlobalCharacter>(GetOwningActor());
 
-	if (nullptr == Chracter && false == Chracter->IsValidLowLevel())
+	if (nullptr == Chracter || false == Chracter->IsValidLowLevel())
 	{
 		return;
 	}

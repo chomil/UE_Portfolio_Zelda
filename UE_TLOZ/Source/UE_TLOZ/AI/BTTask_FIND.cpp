@@ -13,6 +13,16 @@ EBTNodeResult::Type UBTTask_FIND::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 void UBTTask_FIND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
+	if (Dead(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
+		return;
+	}
+	if (Damaged(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
+		return;
+	}
 
 	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
 	AActor* TargetActor = Cast<AActor>(TargetObject);
@@ -24,35 +34,7 @@ void UBTTask_FIND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 		return;
 	}
 
-	//È¸Àü
-	{
-		float Degree = 0.f;
-		FVector TargetPos = TargetActor->GetActorLocation();
-		FVector ThisPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
-		TargetPos.Z = 0.0f;
-		ThisPos.Z = 0.0f;
-
-		FVector Dir = TargetPos - ThisPos;
-		Dir.Normalize();
-
-		FVector ThisForward = GetGlobalCharacter(OwnerComp)->GetActorForwardVector();
-		ThisForward.Normalize();
-
-		FVector Cross = FVector::CrossProduct(ThisForward, Dir);
-		float Angle0 = Dir.Rotation().Yaw;
-		float Angle1 = ThisForward.Rotation().Yaw;
-		Degree = Angle0 - Angle1;
-
-		if (FMath::Abs(Degree) >= 5.0f)
-		{
-			FRotator Rot = FRotator::MakeFromEuler({ 0, 0, Cross.Z * 1000.0f * DelataSeconds });
-			GetGlobalCharacter(OwnerComp)->AddActorWorldRotation(Rot);
-		}
-		else {
-			FRotator Rot = Dir.Rotation();
-			GetGlobalCharacter(OwnerComp)->SetActorRotation(Rot);
-		}
-	}
+	LookTarget(OwnerComp, DelataSeconds);
 
 
 	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(UBTTask_AIBase::GetAiState(OwnerComp));

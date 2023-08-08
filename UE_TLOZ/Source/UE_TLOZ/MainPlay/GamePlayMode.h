@@ -20,6 +20,7 @@ public:
 	}
 
 	void SetWidgetText(FString _Text);
+	void AddWidgetText(FString _Text);
 
 private:
 	class UGamePlayWidget* PlayWidget = nullptr;

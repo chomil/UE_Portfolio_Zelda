@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
 #include <Global/GlobalCharacter.h>
+#include <Global/GlobalAnimInstance.h>
 #include <AI/AIMonCon.h>
 #include <Global/Data/StateEnums.h>
 #include <BehaviorTree/BlackboardComponent.h>
@@ -47,4 +48,12 @@ public:
 	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory);
 
 	void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds) override;
+
+protected:
+	void LookTarget(UBehaviorTreeComponent& OwnerComp, float DelataSeconds, bool bForce = false);
+
+	float GetTargetAngle(UBehaviorTreeComponent& OwnerComp);
+
+	bool Damaged(UBehaviorTreeComponent& OwnerComp);
+	bool Dead(UBehaviorTreeComponent& OwnerComp);
 };

@@ -13,6 +13,17 @@ EBTNodeResult::Type UBTTask_ATTACK::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 void UBTTask_ATTACK::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
+	if (Dead(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
+		return;
+	}
+
+	if (Damaged(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
+		return;
+	}
 
 	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(UBTTask_AIBase::GetAiState(OwnerComp));
 	float Time = Montage->CalculateSequenceLength();

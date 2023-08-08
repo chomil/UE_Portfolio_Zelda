@@ -130,6 +130,124 @@ void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	float StateTime = BlackBoard->GetValueAsFloat(TEXT("StateTime"));
 	StateTime += DelataSeconds;
 	BlackBoard->SetValueAsFloat(TEXT("StateTime"), StateTime);
+
+	float LastDamageTime = BlackBoard->GetValueAsFloat(TEXT("LastDamageTime"));
+	LastDamageTime += DelataSeconds;
+	BlackBoard->SetValueAsFloat(TEXT("LastDamageTime"), LastDamageTime);
+
+
+
+	AActor* ResultActor = GetTargetSearch(OwnerComp);
+	GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), ResultActor);
+}
+
+
+void UBTTask_AIBase::LookTarget(UBehaviorTreeComponent& OwnerComp, float DelataSeconds, bool bForce)
+{
+	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
+	AActor* TargetActor = Cast<AActor>(TargetObject);
+
+	//플레이어 놓침
+	if (nullptr == TargetActor)
+	{
+		return;
+	}
+
+	float Degree = 0.f;
+	//회전
+	{
+		FVector TargetPos = TargetActor->GetActorLocation();
+		FVector ThisPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
+		TargetPos.Z = 0.0f;
+		ThisPos.Z = 0.0f;
+
+		FVector Dir = TargetPos - ThisPos;
+		Dir.Normalize();
+
+		FVector ThisForward = GetGlobalCharacter(OwnerComp)->GetActorForwardVector();
+		ThisForward.Normalize();
+
+		FVector Cross = FVector::CrossProduct(ThisForward, Dir);
+		float Angle0 = Dir.Rotation().Yaw;
+		float Angle1 = ThisForward.Rotation().Yaw;
+		Degree = Angle0 - Angle1;
+
+		if (bForce)
+		{
+			FRotator Rot = Dir.Rotation();
+			GetGlobalCharacter(OwnerComp)->SetActorRotation(Rot);
+		}
+		else
+		{
+			if (FMath::Abs(Degree) >= 5.0f)
+			{
+				FRotator Rot = FRotator::MakeFromEuler({ 0, 0, Cross.Z * 500.0f * DelataSeconds });
+				GetGlobalCharacter(OwnerComp)->AddActorWorldRotation(Rot);
+			}
+			else {
+				FRotator Rot = Dir.Rotation();
+				GetGlobalCharacter(OwnerComp)->SetActorRotation(Rot);
+			}
+		}
+	}
+}
+
+float UBTTask_AIBase::GetTargetAngle(UBehaviorTreeComponent& OwnerComp)
+{
+	float Degree = 0.f;
+
+	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
+	AActor* TargetActor = Cast<AActor>(TargetObject);
+
+	//플레이어 놓침
+	if (nullptr == TargetActor)
+	{
+		return 0.f;
+	}
+
+	FVector TargetPos = TargetActor->GetActorLocation();
+	FVector ThisPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
+	TargetPos.Z = 0.0f;
+	ThisPos.Z = 0.0f;
+
+	FVector Dir = TargetPos - ThisPos;
+	Dir.Normalize();
+
+	FVector ThisForward = GetGlobalCharacter(OwnerComp)->GetActorForwardVector();
+	ThisForward.Normalize();
+
+	float Angle0 = Dir.Rotation().Yaw;
+	float Angle1 = ThisForward.Rotation().Yaw;
+	Degree = Angle0 - Angle1;
+
+	return Degree;
+}
+
+bool UBTTask_AIBase::Damaged(UBehaviorTreeComponent& OwnerComp)
+{
+	float LastDamageTime = GetBlackboardComponent(OwnerComp)->GetValueAsFloat(TEXT("LastDamageTime"));
+	float Damage = GetBlackboardComponent(OwnerComp)->GetValueAsFloat(TEXT("Damage"));
+
+	if (Damage > 0.f)
+	{
+		GetBlackboardComponent(OwnerComp)->SetValueAsFloat(TEXT("Damage"), 0.f);
+		if (LastDamageTime > 2.f)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool UBTTask_AIBase::Dead(UBehaviorTreeComponent& OwnerComp)
+{
+	AGlobalCharacter* Character = GetGlobalCharacter(OwnerComp);
+	if (Character->GetHP() <= 0)
+	{
+		return true;
+	}
+	return false;
 }
 
 

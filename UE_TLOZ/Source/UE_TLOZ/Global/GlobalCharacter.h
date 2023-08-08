@@ -49,6 +49,11 @@ public:
 		return AllAnimations[_Index];
 	}
 
+	class UGlobalAnimInstance* GetAnimInstance()
+	{
+		return GlobalAnimInstance;
+	}
+
 	template<typename EnumType>
 	void SetAllAnimation(const TMap<EnumType, class UAnimMontage*>& _MapAnimation)
 	{
@@ -56,6 +61,20 @@ public:
 		{
 			AllAnimations.Add(static_cast<int>(Pair.Key), Pair.Value);
 		}
+	}
+
+	virtual void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter);
+
+	virtual void Attacked(float _Damage, AGlobalCharacter* _HitCharacter);
+
+	float GetHP()
+	{
+		return HP;
+	}
+
+	float GetSP()
+	{
+		return SP;
 	}
 
 protected:
@@ -79,28 +98,37 @@ protected:
 	}
 
 
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
-		float BaseTurnRate;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
-		float BaseLookUpRate;
-
-private:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 
-	UPROPERTY(Category = "GameModeValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
+	//	float BaseTurnRate;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
+	//	float BaseLookUpRate;
+
+
+	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+		float HP = 1.f;
+
+	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+		float SP = 1.f;
+
+	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+		float ATT = 1.f;
+
+
+
+private:
+	//UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int AniState = 0;
 
-	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		TMap<int, class UAnimMontage*> AllAnimations;
-
 
 	class UGlobalAnimInstance* GlobalAnimInstance = nullptr;
 
