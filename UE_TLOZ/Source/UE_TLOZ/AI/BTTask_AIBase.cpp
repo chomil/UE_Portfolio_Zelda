@@ -17,30 +17,14 @@ void UBTTask_AIBase::OnGameplayTaskActivated(class UGameplayTask&)
 
 float UBTTask_AIBase::GetStateTime(UBehaviorTreeComponent& OwnerComp)
 {
-	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
-
-	if (nullptr == BlackBoard)
-	{
-		UE_LOG(LogTemp, Error, TEXT("if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
-		return 0.0f;
-	}
-
-	float StateTime = BlackBoard->GetValueAsFloat(TEXT("StateTime"));
+	float StateTime = GetBlackboardComponent(OwnerComp)->GetValueAsFloat(TEXT("StateTime"));
 
 	return StateTime;
 }
 
 MONSTER_AISTATE UBTTask_AIBase::GetAiState(UBehaviorTreeComponent& OwnerComp)
 {
-	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
-
-	if (nullptr == BlackBoard)
-	{
-		UE_LOG(LogTemp, Error, TEXT("if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
-		return MONSTER_AISTATE::NONE;
-	}
-
-	uint8 Enum = BlackBoard->GetValueAsEnum(TEXT("AIState"));
+	uint8 Enum = GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("AIState"));
 
 	return static_cast<MONSTER_AISTATE>(Enum);
 
@@ -48,15 +32,7 @@ MONSTER_AISTATE UBTTask_AIBase::GetAiState(UBehaviorTreeComponent& OwnerComp)
 
 void UBTTask_AIBase::ResetStateTime(UBehaviorTreeComponent& OwnerComp)
 {
-	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
-
-	if (nullptr == BlackBoard)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlockBoard)"), __FUNCTION__, __LINE__);
-		return;
-	}
-
-	BlackBoard->SetValueAsFloat(TEXT("StateTime"), 0.0f);
+	GetBlackboardComponent(OwnerComp)->SetValueAsFloat(TEXT("StateTime"), 0.0f);
 }
 
 AGlobalCharacter* UBTTask_AIBase::GetGlobalCharacter(UBehaviorTreeComponent& OwnerComp)
@@ -67,6 +43,7 @@ AGlobalCharacter* UBTTask_AIBase::GetGlobalCharacter(UBehaviorTreeComponent& Own
 		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == Chracter || false == Chracter->IsValidLowLevel())"), __FUNCTION__, __LINE__);
 		return nullptr;
 	}
+
 
 	AGlobalCharacter* Character = AiCon->GetPawn<AGlobalCharacter>();
 
@@ -101,15 +78,7 @@ EBTNodeResult::Type UBTTask_AIBase::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 void UBTTask_AIBase::SetStateChange(UBehaviorTreeComponent& OwnerComp, uint8 _State)
 {
-	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
-
-	if (nullptr == BlackBoard)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
-		return;
-	}
-
-	BlackBoard->SetValueAsEnum(TEXT("AIState"), _State);
+	GetBlackboardComponent(OwnerComp)->SetValueAsEnum(TEXT("AIState"), _State);
 
 	ResetStateTime(OwnerComp);
 
@@ -117,25 +86,30 @@ void UBTTask_AIBase::SetStateChange(UBehaviorTreeComponent& OwnerComp, uint8 _St
 }
 
 
-void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
+void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
-
-	if (nullptr == BlackBoard)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%S(%u)> if (nullptr == BlackBoard)"), __FUNCTION__, __LINE__);
-		return;
-	}
+	UBlackboardComponent* BlackBoard = GetBlackboardComponent(OwnerComp);
 
 	float StateTime = BlackBoard->GetValueAsFloat(TEXT("StateTime"));
-	StateTime += DelataSeconds;
+	StateTime += DeltaSeconds;
 	BlackBoard->SetValueAsFloat(TEXT("StateTime"), StateTime);
 
 	float LastDamageTime = BlackBoard->GetValueAsFloat(TEXT("LastDamageTime"));
-	LastDamageTime += DelataSeconds;
+	LastDamageTime += DeltaSeconds;
 	BlackBoard->SetValueAsFloat(TEXT("LastDamageTime"), LastDamageTime);
 
 
+
+	if (Damaged(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
+		return;
+	}	
+	if (Dead(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
+		return;
+	}
 
 	AActor* ResultActor = GetTargetSearch(OwnerComp);
 	GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), ResultActor);
@@ -144,8 +118,7 @@ void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 void UBTTask_AIBase::LookTarget(UBehaviorTreeComponent& OwnerComp, float DelataSeconds, bool bForce)
 {
-	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
-	AActor* TargetActor = Cast<AActor>(TargetObject);
+	AActor* TargetActor = Cast<AActor>(GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor")));
 
 	//플레이어 놓침
 	if (nullptr == TargetActor)
@@ -231,6 +204,13 @@ bool UBTTask_AIBase::Damaged(UBehaviorTreeComponent& OwnerComp)
 	if (Damage > 0.f)
 	{
 		GetBlackboardComponent(OwnerComp)->SetValueAsFloat(TEXT("Damage"), 0.f);
+
+		MONSTER_AISTATE State = static_cast<MONSTER_AISTATE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("AIState")));
+		if (State == MONSTER_AISTATE::HIT)
+		{
+			return false;
+		}
+
 		if (LastDamageTime > 2.f)
 		{
 			return true;
@@ -245,6 +225,11 @@ bool UBTTask_AIBase::Dead(UBehaviorTreeComponent& OwnerComp)
 	AGlobalCharacter* Character = GetGlobalCharacter(OwnerComp);
 	if (Character->GetHP() <= 0)
 	{
+		MONSTER_AISTATE State = static_cast<MONSTER_AISTATE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("AIState")));
+		if (State == MONSTER_AISTATE::DEATH)
+		{
+			return false;
+		}
 		return true;
 	}
 	return false;

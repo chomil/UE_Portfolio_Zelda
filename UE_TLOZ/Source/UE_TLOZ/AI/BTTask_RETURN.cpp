@@ -13,23 +13,21 @@ EBTNodeResult::Type UBTTask_RETURN::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 void UBTTask_RETURN::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
-	if (Dead(OwnerComp))
-	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
-		return;
-	}
-	if (Damaged(OwnerComp))
-	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
-		return;
-	}
 
-	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(UBTTask_AIBase::GetAiState(OwnerComp));
-	float Time = Montage->CalculateSequenceLength();
 
-	if (Time <= GetStateTime(OwnerComp))
+	FVector PawnPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
+	FVector TargetPos = GetBlackboardComponent(OwnerComp)->GetValueAsVector("OriginPos");
+	PawnPos.Z = 0.0f;
+	TargetPos.Z = 0.0f;
+
+	FVector Dir = TargetPos - PawnPos;
+
+	GetGlobalCharacter(OwnerComp)->AddMovementInput(Dir);
+
+
+	if (Dir.Size() <= 100.f)
 	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::CHASE);
+		SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
 		return;
 	}
 }

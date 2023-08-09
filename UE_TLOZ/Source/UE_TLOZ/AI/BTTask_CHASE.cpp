@@ -20,16 +20,7 @@ EBTNodeResult::Type UBTTask_CHASE::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
-	if (Dead(OwnerComp))
-	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
-		return;
-	}
-	if (Damaged(OwnerComp))
-	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
-		return;
-	}
+
 
 	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
 	AActor* TargetActor = Cast<AActor>(TargetObject);
@@ -37,17 +28,11 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	//플레이어 놓침
 	if (nullptr == TargetActor)
 	{
-		GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
-		SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
+		SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
 		return;
 	}
 
 	float TargetLookAngle = GetTargetAngle(OwnerComp);
-
-	//회전
-	{
-		LookTarget(OwnerComp, DelataSeconds);
-	}
 
 
 	//이동
@@ -71,16 +56,16 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		//시작 위치로부터 멀어지면
 		if (OriginDir.Size() >= SearchRange * 5.f)
 		{
-			//GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
-			//SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
-			//return;
+			GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
+			SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
+			return;
 		}
 
 		//타깃과 멀어지면
 		if (SearchRange * 1.2f < Dir.Size())
 		{
 			GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
-			SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
+			SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
 			return;
 		}
 

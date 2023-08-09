@@ -13,16 +13,6 @@ EBTNodeResult::Type UBTTask_FIND::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 void UBTTask_FIND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
-	if (Dead(OwnerComp))
-	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
-		return;
-	}
-	if (Damaged(OwnerComp))
-	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
-		return;
-	}
 
 	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
 	AActor* TargetActor = Cast<AActor>(TargetObject);
@@ -31,7 +21,7 @@ void UBTTask_FIND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	if (nullptr == TargetActor)
 	{
 		//SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
-		return;
+		//return;
 	}
 
 	LookTarget(OwnerComp, DelataSeconds);

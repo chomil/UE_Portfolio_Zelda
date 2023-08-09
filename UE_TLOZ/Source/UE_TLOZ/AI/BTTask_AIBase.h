@@ -44,12 +44,11 @@ public:
 
 	class UBlackboardComponent* GetBlackboardComponent(UBehaviorTreeComponent& OwnerComp);
 
-
-	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory);
-
-	void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds) override;
-
 protected:
+	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+	void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
 	void LookTarget(UBehaviorTreeComponent& OwnerComp, float DelataSeconds, bool bForce = false);
 
 	float GetTargetAngle(UBehaviorTreeComponent& OwnerComp);
