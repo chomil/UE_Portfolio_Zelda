@@ -17,14 +17,7 @@ void UBTTask_FIND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
 	AActor* TargetActor = Cast<AActor>(TargetObject);
 
-	//플레이어 놓침
-	if (nullptr == TargetActor)
-	{
-		//SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
-		//return;
-	}
-
-	LookTarget(OwnerComp, DelataSeconds);
+	LookTarget(OwnerComp, DelataSeconds*2);
 
 
 	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(UBTTask_AIBase::GetAiState(OwnerComp));

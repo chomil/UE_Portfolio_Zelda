@@ -7,6 +7,13 @@ EBTNodeResult::Type UBTTask_RETURN::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
+	UCharacterMovementComponent* MoveCom = Cast<UCharacterMovementComponent>(GetGlobalCharacter(OwnerComp)->GetMovementComponent());
+
+	if (nullptr != MoveCom)
+	{
+		MoveCom->MaxWalkSpeed = 150.0f;
+	}
+
 	return EBTNodeResult::Type::InProgress;
 }
 
