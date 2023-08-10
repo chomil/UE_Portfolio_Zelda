@@ -81,6 +81,7 @@ protected:
 private:
 	class AGamePlayMode* PlayMode = nullptr;
 	float fComboTime = 0.f;
+	float fBowChargeTime = 0.f;
 
 
 	UFUNCTION()

@@ -85,6 +85,10 @@ void AMainCharacter::Tick(float DeltaTime)
 	case PLAYER_ANISTATE::ATTACK_DASH:
 		fComboTime += DeltaTime;
 		break;
+
+	case PLAYER_ANISTATE::BOW_CHARGE:
+		fBowChargeTime += DeltaTime;
+		break;
 	default:
 		GetCharacterMovement()->GroundFriction = 8.f;
 		fComboTime = 0.f;
@@ -147,20 +151,13 @@ void AMainCharacter::MoveRight(float Val)
 	vInputDir.Y = Val;
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
-	case PLAYER_ANISTATE::JUMP:
-	case PLAYER_ANISTATE::LAND:
-	case PLAYER_ANISTATE::ATTACK1:
-	case PLAYER_ANISTATE::ATTACK2:
-	case PLAYER_ANISTATE::ATTACK3:
-	case PLAYER_ANISTATE::ATTACK4:
-	case PLAYER_ANISTATE::ATTACK_DASH:
-	case PLAYER_ANISTATE::SWORD_ON:
-	case PLAYER_ANISTATE::SWORD_OFF:
-	case PLAYER_ANISTATE::HIT_S:
-	case PLAYER_ANISTATE::HIT_M:
-		return;
-	default:
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
 		break;
+	default:
+		return;
 	}
 
 	if (Val != 0.f)
@@ -198,20 +195,13 @@ void AMainCharacter::MoveForward(float Val)
 	vInputDir.X = Val;
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
-	case PLAYER_ANISTATE::JUMP:
-	case PLAYER_ANISTATE::LAND:
-	case PLAYER_ANISTATE::ATTACK1:
-	case PLAYER_ANISTATE::ATTACK2:
-	case PLAYER_ANISTATE::ATTACK3:
-	case PLAYER_ANISTATE::ATTACK4:
-	case PLAYER_ANISTATE::ATTACK_DASH:
-	case PLAYER_ANISTATE::SWORD_ON:
-	case PLAYER_ANISTATE::SWORD_OFF:
-	case PLAYER_ANISTATE::HIT_S:
-	case PLAYER_ANISTATE::HIT_M:
-		return;
-	default:
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
 		break;
+	default:
+		return;
 	}
 
 	if (Val != 0.f)
@@ -248,20 +238,13 @@ void AMainCharacter::Dash(float Val)
 {
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
-	case PLAYER_ANISTATE::JUMP:
-	case PLAYER_ANISTATE::LAND:
-	case PLAYER_ANISTATE::ATTACK1:
-	case PLAYER_ANISTATE::ATTACK2:
-	case PLAYER_ANISTATE::ATTACK3:
-	case PLAYER_ANISTATE::ATTACK4:
-	case PLAYER_ANISTATE::ATTACK_DASH:
-	case PLAYER_ANISTATE::SWORD_ON:
-	case PLAYER_ANISTATE::SWORD_OFF:
-	case PLAYER_ANISTATE::HIT_S:
-	case PLAYER_ANISTATE::HIT_M:
-		return;
-	default:
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
 		break;
+	default:
+		return;
 	}
 	if (Val == 1.f)
 	{

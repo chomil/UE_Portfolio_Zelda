@@ -19,7 +19,11 @@ enum class PLAYER_ANISTATE : uint8
 	SWORD_ON,
 	SWORD_OFF,
 	HIT_S,
-	HIT_M
+	HIT_M,
+	BOW_ON,
+	BOW_OFF,
+	BOW_CHARGE,
+	BOW_SHOOT
 };
 
 
