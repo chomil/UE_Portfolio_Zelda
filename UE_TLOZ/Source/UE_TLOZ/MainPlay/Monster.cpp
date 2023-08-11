@@ -24,6 +24,7 @@ void AMonster::BeginPlay()
 
 		HP = CurMonsterData->HP;
 		ATT = CurMonsterData->ATT;
+		MonsterType = CurMonsterData->MonsterType;
 	}
 
 	Super::BeginPlay();

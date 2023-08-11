@@ -100,17 +100,16 @@ void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 
 
-	if (Damaged(OwnerComp))
-	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
-		return;
-	}	
 	if (Dead(OwnerComp))
 	{
 		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
 		return;
 	}
-
+	if (Damaged(OwnerComp))
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
+		return;
+	}	
 	AActor* ResultActor = GetTargetSearch(OwnerComp);
 	GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), ResultActor);
 }
@@ -206,7 +205,8 @@ bool UBTTask_AIBase::Damaged(UBehaviorTreeComponent& OwnerComp)
 		GetBlackboardComponent(OwnerComp)->SetValueAsFloat(TEXT("Damage"), 0.f);
 
 		MONSTER_AISTATE State = static_cast<MONSTER_AISTATE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("AIState")));
-		if (State == MONSTER_AISTATE::HIT)
+		if (State == MONSTER_AISTATE::HIT || State == MONSTER_AISTATE::DEATH || 
+			State == MONSTER_AISTATE::STUN_START || State == MONSTER_AISTATE::STUN_LOOP || State == MONSTER_AISTATE::STUN_END)
 		{
 			return false;
 		}

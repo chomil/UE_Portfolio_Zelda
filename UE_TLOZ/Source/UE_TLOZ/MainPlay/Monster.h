@@ -33,6 +33,8 @@ private:
 	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* WeaponComponent;
 
+	MONSTER_TYPE MonsterType;
+
 	UFUNCTION()
 		void BeginWeaponOverLap(
 			UPrimitiveComponent* OverlappedComponent,

@@ -19,6 +19,10 @@ struct UE_TLOZ_API FMonsterData : public FTableRowBase
 	FMonsterData() {}
 	~FMonsterData() {}
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+		MONSTER_TYPE MonsterType;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 		float HP;
 

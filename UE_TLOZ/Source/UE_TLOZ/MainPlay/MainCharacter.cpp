@@ -343,6 +343,16 @@ void AMainCharacter::AttackAction()
 
 void AMainCharacter::BowAttackStart()
 {
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+	{
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
+		break;
+	default:
+		return;
+	}
 	if (bEquipSword)
 	{
 		SetAniState(PLAYER_ANISTATE::SWORD_ON);
