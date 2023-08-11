@@ -73,6 +73,15 @@ EBTNodeResult::Type UBTTask_AIBase::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 {
 	GetGlobalCharacter(OwnerComp)->SetAniState(GetAiState(OwnerComp));
 
+
+	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(UBTTask_AIBase::GetAiState(OwnerComp));
+	//태스크에서 플레이할 몽타주가 없으면 Fail
+	if (Montage == nullptr)
+	{
+		GetBlackboardComponent(OwnerComp)->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(MONSTER_AISTATE::IDLE));
+		ResetStateTime(OwnerComp);
+		return EBTNodeResult::Type::Failed;
+	}
 	return EBTNodeResult::Type::InProgress;
 }
 

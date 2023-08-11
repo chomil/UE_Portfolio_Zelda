@@ -5,6 +5,8 @@
 #include "GamePlayMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -19,7 +21,7 @@ AMainCharacter::AMainCharacter()
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
-
+	
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 
 	Tags.Add(TEXT("Player"));
@@ -48,7 +50,8 @@ void AMainCharacter::BeginPlay()
 	GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &AMainCharacter::MontageEnd);
 
 	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::BeginWeaponOverLap);
-	
+
+	SpringArmCom = Cast<USpringArmComponent>(GetComponentByClass(USpringArmComponent::StaticClass()));
 }
 
 // Called every frame
@@ -56,12 +59,68 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	float LeftButtonTime = GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(EKeys::LeftMouseButton);
+	if (LeftButtonTime > 0)
+	{
+		AttackAction();
+		//UE_LOG(LogTemp, Log, TEXT("%f Second"), LeftButtonTime);
+	}
+
+	float RightButtonTime = GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(EKeys::RightMouseButton);
+	if (RightButtonTime > 0)
+	{
+		BowAttackStart();
+		//UE_LOG(LogTemp, Log, TEXT("%f Second"), RightButtonTime);
+	}
+	
 
 	if (PlayMode == nullptr)
 	{
 		return;
 	}
 
+	if (fBowChargeTime > 0)
+	{ //활시위 당길때 등 카메라의 스프링 암 오프셋 이동
+		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength, 200.f, fBowChargeTime * 30.f * DeltaTime);
+		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 40, 50), fBowChargeTime * 30.f * DeltaTime);
+
+		bUseControllerRotationRoll = false;
+		bUseControllerRotationPitch = true;
+		bUseControllerRotationYaw = true;
+
+		FRotator Rot = GetControlRotation();
+		if (Rot.Pitch > 180)
+		{
+			Rot.Pitch -= 360;
+		}
+		if (Rot.Pitch < -10)
+		{
+			Rot.Pitch = -10;
+		}
+		else if (40 < Rot.Pitch)
+		{
+			Rot.Pitch = 40;
+		}
+		UE_LOG(LogTemp, Log, TEXT("%f Pitch"), Rot.Pitch);
+		GetController()->ClientSetRotation(Rot);
+		//FVector NewVec = FVector(0, 0, 0);
+		//GetController()->SetControlRotation(NewVec.Rotation());
+	}
+	else
+	{
+		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength ,360.f, 30.f * DeltaTime);
+		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 0, 0), 30.f * DeltaTime);
+
+		FRotator Rot = GetActorRotation();
+		if (Rot.Pitch != 0)
+		{
+			Rot.Pitch = 0;
+			SetActorRotation(Rot);
+		}
+		bUseControllerRotationRoll = false;
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationYaw = false;
+	}
 
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
@@ -92,6 +151,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	default:
 		GetCharacterMovement()->GroundFriction = 8.f;
 		fComboTime = 0.f;
+		fBowChargeTime = 0.f;
 		break;
 	}
 
@@ -140,7 +200,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Player_Jump", EInputEvent::IE_Pressed, this, &AMainCharacter::PlayerJump);
 	PlayerInputComponent->BindAction("Player_LClick", EInputEvent::IE_Pressed, this, &AMainCharacter::AttackAction);
-	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Pressed, this, &AMainCharacter::BowAttackStart);
+	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Repeat, this, &AMainCharacter::BowAttackStart);
 	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Released, this, &AMainCharacter::BowAttackEnd);
 
 }
@@ -160,6 +220,7 @@ void AMainCharacter::MoveRight(float Val)
 		return;
 	}
 
+
 	if (Val != 0.f)
 	{
 		if (bIsDash == true)
@@ -170,7 +231,6 @@ void AMainCharacter::MoveRight(float Val)
 		{
 			SetAniState(PLAYER_ANISTATE::RUN);
 		}
-
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -206,6 +266,7 @@ void AMainCharacter::MoveForward(float Val)
 
 	if (Val != 0.f)
 	{
+
 		if (bIsDash == true)
 		{
 			SetAniState(PLAYER_ANISTATE::DASH);
@@ -214,7 +275,6 @@ void AMainCharacter::MoveForward(float Val)
 		{
 			SetAniState(PLAYER_ANISTATE::RUN);
 		}
-
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -278,6 +338,13 @@ void AMainCharacter::PlayerJump()
 
 void AMainCharacter::AttackAction()
 {
+	if (bEquipBow)
+	{
+		SetAniState(PLAYER_ANISTATE::BOW_OFF);
+		ChangeWeaponSocket(BowComponent, "Bow_Wait");
+		return;
+	}
+
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::DASH:
@@ -337,8 +404,10 @@ void AMainCharacter::AttackAction()
 			break;
 		}
 	default:
-		break;
+		return;
 	}
+
+
 }
 
 void AMainCharacter::BowAttackStart()
@@ -358,11 +427,28 @@ void AMainCharacter::BowAttackStart()
 		SetAniState(PLAYER_ANISTATE::SWORD_ON);
 		ChangeWeaponSocket(WeaponComponent, "Sword_Wait");
 	}
+	else
+	{
+		SetAniState(PLAYER_ANISTATE::BOW_CHARGE);
+		ChangeWeaponSocket(BowComponent, "Weapon_L");
+	}
 	//ChangeWeaponSocket(BowPtr, "Weapon_L");
 }
 
 void AMainCharacter::BowAttackEnd()
 {
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+	{
+	case PLAYER_ANISTATE::BOW_CHARGE:
+		break;
+	default:
+		return;
+	}
+	if (bEquipBow)
+	{
+		SetAniState(PLAYER_ANISTATE::BOW_SHOOT);
+		//ChangeWeaponSocket(BowComponent, "Bow_Wait");
+	}
 
 }
 
@@ -387,6 +473,26 @@ float AMainCharacter::GetRightHandBlending()
 	}
 }
 
+float AMainCharacter::GetBowHandBlending()
+{
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+	{
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
+	case PLAYER_ANISTATE::LAND:
+	case PLAYER_ANISTATE::JUMP:
+		if (bEquipBow)
+		{
+			return 1.0f;
+		}
+		return 0.0f;
+	default:
+		return 0.0f;
+	}
+}
+
 void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)
 {
 	if (_Inter == false)
@@ -400,7 +506,10 @@ void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)
 			GetAnimMontage(PLAYER_ANISTATE::SWORD_ON) == Anim ||
 			GetAnimMontage(PLAYER_ANISTATE::SWORD_OFF) == Anim ||
 			GetAnimMontage(PLAYER_ANISTATE::HIT_S) == Anim ||
-			GetAnimMontage(PLAYER_ANISTATE::HIT_M) == Anim)
+			GetAnimMontage(PLAYER_ANISTATE::HIT_M) == Anim || 
+			GetAnimMontage(PLAYER_ANISTATE::BOW_ON) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::BOW_OFF) == Anim||
+			GetAnimMontage(PLAYER_ANISTATE::BOW_SHOOT) == Anim)
 		{
 			SetAniState(PLAYER_ANISTATE::IDLE);
 
@@ -435,6 +544,8 @@ void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _Sock
 void AMainCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)
 {
 	Super::Damaged(_Damage, _AttackCharacter);
+
+	UE_LOG(LogTemp, Log, TEXT("Player Damaged"));
 
 	SetAniState(PLAYER_ANISTATE::HIT_M);
 }

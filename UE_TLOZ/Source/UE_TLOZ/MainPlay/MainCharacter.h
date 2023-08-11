@@ -43,7 +43,11 @@ public:
 	void BowAttackEnd();
 
 	UFUNCTION(BlueprintCallable)
-	float GetRightHandBlending();
+		float GetRightHandBlending();
+
+
+	UFUNCTION(BlueprintCallable)
+		float GetBowHandBlending();
 
 
 
@@ -66,6 +70,8 @@ public:
 	bool bEquipBow = false;
 
 
+
+
 	void ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName);
 
 	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
@@ -75,6 +81,9 @@ public:
 	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* BowComponent;
 
+	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* ArrowComponent;
+
 protected:
 	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 
@@ -82,6 +91,8 @@ private:
 	class AGamePlayMode* PlayMode = nullptr;
 	float fComboTime = 0.f;
 	float fBowChargeTime = 0.f;
+	bool bPressingL = false;
+	bool bPressingR = false;
 
 
 	UFUNCTION()
@@ -93,4 +104,6 @@ private:
 			bool bFromSweep,
 			const FHitResult& SweepResult
 		);
+
+	class USpringArmComponent* SpringArmCom;
 };

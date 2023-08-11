@@ -30,6 +30,12 @@ void AGlobalCharacter::BeginPlay()
 
 	GlobalAnimInstance = Cast<UGlobalAnimInstance>(GetMesh()->GetAnimInstance());
 
+	if (GlobalAnimInstance == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("GlobalAnimInstance == nullptr"));
+		return;
+	}
+
 	GlobalAnimInstance->AllAnimations = AllAnimations;
 }
 
