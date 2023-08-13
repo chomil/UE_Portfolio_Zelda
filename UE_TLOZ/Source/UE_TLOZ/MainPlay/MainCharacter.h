@@ -54,43 +54,43 @@ public:
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Anim, bool _Inter);
 
+	void ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName);
 
-	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
-	PLAYER_ANISTATE PlayerAniState = PLAYER_ANISTATE::IDLE;
-
-
-	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
-	TMap<PLAYER_ANISTATE, class UAnimMontage*> PlayerAllAnimations;
 
 
 public:
-	FVector vInputDir = FVector::ZeroVector;
+	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
+		PLAYER_ANISTATE PlayerAniState = PLAYER_ANISTATE::IDLE;
+
+	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
+		TMap<PLAYER_ANISTATE, class UAnimMontage*> PlayerAllAnimations;
+
+	FVector InputDir = FVector::ZeroVector;
 	bool bIsDash = false;
 	bool bEquipSword = false;
 	bool bEquipBow = false;
 
+	float ComboTime = 0.f;
+
+	UPROPERTY(Category = "Weapon", BlueprintReadWrite)
+	float BowChargeTime = 0.f;
 
 
-
-	void ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName);
-
-	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* WeaponComponent;
+	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* WeaponMeshComponent;
 
 
-	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* BowComponent;
+	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
+	USkeletalMeshComponent* BowMeshComponent;
 
-	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* ArrowComponent;
+	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* ArrowMeshComponent;
 
 protected:
 	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;
-	float fComboTime = 0.f;
-	float fBowChargeTime = 0.f;
 	bool bPressingL = false;
 	bool bPressingR = false;
 

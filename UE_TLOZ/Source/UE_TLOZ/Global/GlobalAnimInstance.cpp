@@ -3,6 +3,7 @@
 
 #include "Global/GlobalAnimInstance.h"
 #include "GlobalCharacter.h"
+#include <Global/Data/StateEnums.h>
 
 void UGlobalAnimInstance::NativeBeginPlay()
 {
@@ -49,6 +50,11 @@ void UGlobalAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 
 		CurMontage = Montage;
 		Montage_Play(Montage, 1.0f);
+
+		if (Chracter->ActorHasTag(TEXT("Player")))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Player State : %s"), *UEnum::GetValueAsString(static_cast<PLAYER_ANISTATE>(AniState)));
+		}
 	}
 }
 

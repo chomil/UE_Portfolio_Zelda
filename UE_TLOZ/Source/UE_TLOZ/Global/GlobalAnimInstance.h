@@ -23,7 +23,6 @@ public:
 	UFUNCTION()
 		void MontageEnd(UAnimMontage* Anim, bool _Inter);
 
-	// 애님인스턴용 Tick과 BeginPlay
 
 protected:
 	void NativeBeginPlay() override;

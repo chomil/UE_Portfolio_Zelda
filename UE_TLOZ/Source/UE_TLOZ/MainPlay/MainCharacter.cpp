@@ -25,6 +25,7 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 
 	Tags.Add(TEXT("Player"));
+
 }
 
 // Called when the game starts or when spawned
@@ -48,17 +49,40 @@ void AMainCharacter::BeginPlay()
 
 
 	GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &AMainCharacter::MontageEnd);
-
-	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::BeginWeaponOverLap);
+	
+	WeaponMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::BeginWeaponOverLap);
 
 	SpringArmCom = Cast<USpringArmComponent>(GetComponentByClass(USpringArmComponent::StaticClass()));
+
+	HP = 10;
+	BowChargeTime = 0.f;
 }
 
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
+	for (FAnimNotifyEventReference NotifyRef : GetMesh()->GetAnimInstance()->NotifyQueue.AnimNotifies)
+	{
+		if (NotifyRef.GetNotify()->NotifyName == TEXT("SwordOff"))
+		{
+			ChangeWeaponSocket(WeaponMeshComponent, "Sword_Wait");
+		}
+		else if (NotifyRef.GetNotify()->NotifyName == TEXT("SwordOn"))
+		{
+			ChangeWeaponSocket(WeaponMeshComponent, "Weapon_R");
+		}
+		else if (NotifyRef.GetNotify()->NotifyName == TEXT("BowOff"))
+		{
+			ChangeWeaponSocket(BowMeshComponent, "Bow_Wait");
+		}
+		else if (NotifyRef.GetNotify()->NotifyName == TEXT("BowOn"))
+		{
+			ChangeWeaponSocket(BowMeshComponent, "Weapon_L");
+		}
+	}
+
 	float LeftButtonTime = GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(EKeys::LeftMouseButton);
 	if (LeftButtonTime > 0)
 	{
@@ -79,10 +103,10 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 
-	if (fBowChargeTime > 0)
+	if (BowChargeTime > 0)
 	{ //활시위 당길때 등 카메라의 스프링 암 오프셋 이동
-		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength, 200.f, fBowChargeTime * 30.f * DeltaTime);
-		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 40, 50), fBowChargeTime * 30.f * DeltaTime);
+		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength, 200.f, BowChargeTime * 30.f * DeltaTime);
+		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 40, 50), BowChargeTime * 30.f * DeltaTime);
 
 		bUseControllerRotationRoll = false;
 		bUseControllerRotationPitch = true;
@@ -101,10 +125,11 @@ void AMainCharacter::Tick(float DeltaTime)
 		{
 			Rot.Pitch = 40;
 		}
-		UE_LOG(LogTemp, Log, TEXT("%f Pitch"), Rot.Pitch);
+		//UE_LOG(LogTemp, Log, TEXT("%f Pitch"), Rot.Pitch);
 		GetController()->ClientSetRotation(Rot);
 		//FVector NewVec = FVector(0, 0, 0);
 		//GetController()->SetControlRotation(NewVec.Rotation());
+
 	}
 	else
 	{
@@ -127,7 +152,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	case PLAYER_ANISTATE::JUMP:		
 		if (JumpCurrentCount == 0)
 		{
-			if (vInputDir.IsZero())
+			if (InputDir.IsZero())
 			{
 				SetAniState(PLAYER_ANISTATE::LAND);
 			}
@@ -142,21 +167,24 @@ void AMainCharacter::Tick(float DeltaTime)
 	case PLAYER_ANISTATE::ATTACK3:
 	case PLAYER_ANISTATE::ATTACK4:
 	case PLAYER_ANISTATE::ATTACK_DASH:
-		fComboTime += DeltaTime;
+		ComboTime += DeltaTime;
 		break;
 
 	case PLAYER_ANISTATE::BOW_CHARGE:
-		fBowChargeTime += DeltaTime;
+		BowChargeTime += DeltaTime;
 		break;
 	default:
 		GetCharacterMovement()->GroundFriction = 8.f;
-		fComboTime = 0.f;
-		fBowChargeTime = 0.f;
+		ComboTime = 0.f;
+		BowChargeTime = 0.f;
 		break;
 	}
 
 	//UE_LOG(LogTemp, Log, TEXT("%d"), (int)aniState);
+
+	
 	PlayMode->SetWidgetText(GetActorLocation().ToString());
+	PLAYER_ANISTATE state = static_cast<PLAYER_ANISTATE>(GetAniState());
 
 }
 
@@ -208,7 +236,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::MoveRight(float Val)
 {
-	vInputDir.Y = Val;
+	InputDir.Y = Val;
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
@@ -243,7 +271,7 @@ void AMainCharacter::MoveRight(float Val)
 	}
 	else
 	{
-		if (vInputDir.IsZero())
+		if (InputDir.IsZero())
 		{
 			SetAniState(PLAYER_ANISTATE::IDLE);
 		}
@@ -252,7 +280,7 @@ void AMainCharacter::MoveRight(float Val)
 
 void AMainCharacter::MoveForward(float Val)
 {
-	vInputDir.X = Val;
+	InputDir.X = Val;
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
@@ -266,7 +294,6 @@ void AMainCharacter::MoveForward(float Val)
 
 	if (Val != 0.f)
 	{
-
 		if (bIsDash == true)
 		{
 			SetAniState(PLAYER_ANISTATE::DASH);
@@ -287,7 +314,7 @@ void AMainCharacter::MoveForward(float Val)
 	}
 	else
 	{
-		if (vInputDir.IsZero())
+		if (InputDir.IsZero())
 		{
 			SetAniState(PLAYER_ANISTATE::IDLE);
 		}
@@ -341,7 +368,7 @@ void AMainCharacter::AttackAction()
 	if (bEquipBow)
 	{
 		SetAniState(PLAYER_ANISTATE::BOW_OFF);
-		ChangeWeaponSocket(BowComponent, "Bow_Wait");
+		ChangeWeaponSocket(BowMeshComponent, "Bow_Wait");
 		return;
 	}
 
@@ -351,7 +378,7 @@ void AMainCharacter::AttackAction()
 		GetCharacterMovement()->GroundFriction = 0;
 		GetCharacterMovement()->AddImpulse(GetActorForwardVector() * 500, true);
 		SetAniState(PLAYER_ANISTATE::ATTACK_DASH);
-		ChangeWeaponSocket(WeaponComponent, "Weapon_R");
+		ChangeWeaponSocket(WeaponMeshComponent, "Weapon_R");
 		break;
 	case PLAYER_ANISTATE::IDLE:
 	case PLAYER_ANISTATE::RUN:
@@ -359,7 +386,6 @@ void AMainCharacter::AttackAction()
 		if (bEquipSword == false)
 		{
 			SetAniState(PLAYER_ANISTATE::SWORD_ON);
-			ChangeWeaponSocket(WeaponComponent, "Weapon_R");
 			break;
 		}
 		else
@@ -369,37 +395,37 @@ void AMainCharacter::AttackAction()
 		}
 	}
 	case PLAYER_ANISTATE::ATTACK1:
-		if (fComboTime > 0.3f)
+		if (ComboTime > 0.3f)
 		{
-			fComboTime = 0.f;
+			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK2);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK2:
-		if (fComboTime > 0.3f)
+		if (ComboTime > 0.3f)
 		{
-			fComboTime = 0.f;
+			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK3);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK3:
-		if (fComboTime > 0.3f)
+		if (ComboTime > 0.3f)
 		{
-			fComboTime = 0.f;
+			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK4);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK4:
-		if (fComboTime > 0.9f)
+		if (ComboTime > 0.9f)
 		{
-			fComboTime = 0.f;
+			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK1);
 			break;
 		}
 	case PLAYER_ANISTATE::ATTACK_DASH:
-		if (fComboTime > 0.6f)
+		if (ComboTime > 0.6f)
 		{
-			fComboTime = 0.f;
+			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK1);
 			break;
 		}
@@ -424,13 +450,18 @@ void AMainCharacter::BowAttackStart()
 	}
 	if (bEquipSword)
 	{
-		SetAniState(PLAYER_ANISTATE::SWORD_ON);
-		ChangeWeaponSocket(WeaponComponent, "Sword_Wait");
+		SetAniState(PLAYER_ANISTATE::SWORD_OFF);
 	}
 	else
 	{
-		SetAniState(PLAYER_ANISTATE::BOW_CHARGE);
-		ChangeWeaponSocket(BowComponent, "Weapon_L");
+		if (bEquipBow)
+		{
+			SetAniState(PLAYER_ANISTATE::BOW_CHARGE);
+		}
+		else
+		{
+			SetAniState(PLAYER_ANISTATE::BOW_ON);
+		}
 	}
 	//ChangeWeaponSocket(BowPtr, "Weapon_L");
 }
@@ -446,8 +477,14 @@ void AMainCharacter::BowAttackEnd()
 	}
 	if (bEquipBow)
 	{
-		SetAniState(PLAYER_ANISTATE::BOW_SHOOT);
-		//ChangeWeaponSocket(BowComponent, "Bow_Wait");
+		if (BowChargeTime > 0.4f)
+		{
+			SetAniState(PLAYER_ANISTATE::BOW_SHOOT);
+		}
+		else
+		{
+			SetAniState(PLAYER_ANISTATE::IDLE);
+		}
 	}
 
 }
@@ -497,6 +534,11 @@ void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)
 {
 	if (_Inter == false)
 	{
+		if (GetAnimMontage(PLAYER_ANISTATE::BOW_SHOOT) == Anim)
+		{
+
+		}
+
 		if (GetAnimMontage(PLAYER_ANISTATE::LAND) == Anim ||
 			GetAnimMontage(PLAYER_ANISTATE::ATTACK1) == Anim ||
 			GetAnimMontage(PLAYER_ANISTATE::ATTACK2) == Anim ||
@@ -514,7 +556,9 @@ void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)
 			SetAniState(PLAYER_ANISTATE::IDLE);
 
 			GetMesh()->GetAnimInstance()->Montage_Play(GetAnimMontage(PLAYER_ANISTATE::IDLE), 1.0f);
+			UE_LOG(LogTemp, Log, TEXT("Player State : %s"), *UEnum::GetValueAsString(static_cast<PLAYER_ANISTATE>(GetAniState())));
 		}
+
 	}
 }
 
@@ -545,7 +589,7 @@ void AMainCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)
 {
 	Super::Damaged(_Damage, _AttackCharacter);
 
-	UE_LOG(LogTemp, Log, TEXT("Player Damaged"));
+	//UE_LOG(LogTemp, Log, TEXT("Player Damaged"));
 
 	SetAniState(PLAYER_ANISTATE::HIT_M);
 }
