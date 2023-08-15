@@ -75,6 +75,8 @@ public:
 	UPROPERTY(Category = "Weapon", BlueprintReadWrite)
 	float BowChargeTime = 0.f;
 
+	bool bBowZoom = false;
+
 
 	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* WeaponMeshComponent;
@@ -93,6 +95,8 @@ private:
 	class AGamePlayMode* PlayMode = nullptr;
 	bool bPressingL = false;
 	bool bPressingR = false;
+
+	AActor* ArrowActor = nullptr;
 
 
 	UFUNCTION()

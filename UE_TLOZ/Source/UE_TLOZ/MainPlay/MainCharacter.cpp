@@ -6,6 +6,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "NiagaraComponent.h"
+
+
 
 
 // Sets default values
@@ -53,6 +57,8 @@ void AMainCharacter::BeginPlay()
 	WeaponMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::BeginWeaponOverLap);
 
 	SpringArmCom = Cast<USpringArmComponent>(GetComponentByClass(USpringArmComponent::StaticClass()));
+
+
 
 	HP = 10;
 	BowChargeTime = 0.f;
@@ -103,7 +109,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		return;
 	}
 
-	if (BowChargeTime > 0)
+	if (bBowZoom)
 	{ //활시위 당길때 등 카메라의 스프링 암 오프셋 이동
 		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength, 200.f, BowChargeTime * 30.f * DeltaTime);
 		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 40, 50), BowChargeTime * 30.f * DeltaTime);
@@ -130,11 +136,14 @@ void AMainCharacter::Tick(float DeltaTime)
 		//FVector NewVec = FVector(0, 0, 0);
 		//GetController()->SetControlRotation(NewVec.Rotation());
 
+
+		// 활 시위 본 당기기
+		
 	}
 	else
 	{
-		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength ,360.f, 30.f * DeltaTime);
-		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 0, 0), 30.f * DeltaTime);
+		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength ,360.f, 2 * DeltaTime);
+		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 0, 0), 2 * DeltaTime);
 
 		FRotator Rot = GetActorRotation();
 		if (Rot.Pitch != 0)
@@ -172,7 +181,12 @@ void AMainCharacter::Tick(float DeltaTime)
 
 	case PLAYER_ANISTATE::BOW_CHARGE:
 		BowChargeTime += DeltaTime;
+		bBowZoom = true;
 		break;
+
+	case PLAYER_ANISTATE::DASH:
+	case PLAYER_ANISTATE::RUN:
+		bBowZoom = false;
 	default:
 		GetCharacterMovement()->GroundFriction = 8.f;
 		ComboTime = 0.f;
@@ -237,6 +251,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AMainCharacter::MoveRight(float Val)
 {
 	InputDir.Y = Val;
+
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
@@ -280,7 +295,8 @@ void AMainCharacter::MoveRight(float Val)
 
 void AMainCharacter::MoveForward(float Val)
 {
-	InputDir.X = Val;
+	InputDir.X = Val; 
+
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
@@ -369,6 +385,11 @@ void AMainCharacter::AttackAction()
 	{
 		SetAniState(PLAYER_ANISTATE::BOW_OFF);
 		ChangeWeaponSocket(BowMeshComponent, "Bow_Wait");
+		if (ArrowActor != nullptr)
+		{
+			ArrowActor->Destroy();
+			ArrowActor = nullptr;
+		}
 		return;
 	}
 
@@ -457,10 +478,35 @@ void AMainCharacter::BowAttackStart()
 		if (bEquipBow)
 		{
 			SetAniState(PLAYER_ANISTATE::BOW_CHARGE);
+
+			if (ArrowActor == nullptr)
+			{
+				FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
+
+				UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
+
+				ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
+
+				FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+				Rule.ScaleRule = EAttachmentRule::KeepWorld;
+				ArrowActor->AttachToComponent(GetMesh(), Rule, FName("Weapon_R"));
+			}
 		}
 		else
 		{
 			SetAniState(PLAYER_ANISTATE::BOW_ON);
+			if (ArrowActor == nullptr)
+			{
+				FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
+
+				UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
+
+				ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
+
+				FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+				Rule.ScaleRule = EAttachmentRule::KeepWorld;
+				ArrowActor->AttachToComponent(GetMesh(), Rule, FName("Weapon_R"));
+			}
 		}
 	}
 	//ChangeWeaponSocket(BowPtr, "Weapon_L");
@@ -480,6 +526,26 @@ void AMainCharacter::BowAttackEnd()
 		if (BowChargeTime > 0.4f)
 		{
 			SetAniState(PLAYER_ANISTATE::BOW_SHOOT);
+
+			if (ArrowActor != nullptr)
+			{
+				ArrowActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+				UStaticMeshComponent* ArrowMesh = Cast<UStaticMeshComponent>(ArrowActor->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+				//ArrowMesh->SetSimulatePhysics(true);
+				FVector Forward = ArrowMesh->GetForwardVector();
+
+				UProjectileMovementComponent* ArrowMove = Cast<UProjectileMovementComponent>(ArrowActor->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
+				ArrowMove->bSimulationEnabled = true;
+				ArrowMove->Velocity = (Forward * 3000.f);
+
+
+				UNiagaraComponent* ArrowTrail = Cast<UNiagaraComponent>(ArrowActor->GetComponentByClass(UNiagaraComponent::StaticClass()));
+
+				ArrowTrail->Activate();
+
+				ArrowActor = nullptr;
+			}
+
 		}
 		else
 		{
@@ -534,9 +600,9 @@ void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)
 {
 	if (_Inter == false)
 	{
-		if (GetAnimMontage(PLAYER_ANISTATE::BOW_SHOOT) == Anim)
+		if (GetAnimMontage(PLAYER_ANISTATE::BOW_OFF) == Anim)
 		{
-
+			bBowZoom = false;
 		}
 
 		if (GetAnimMontage(PLAYER_ANISTATE::LAND) == Anim ||
