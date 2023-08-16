@@ -542,7 +542,6 @@ void AMainCharacter::BowAttackEnd()
 				UNiagaraComponent* ArrowTrail = Cast<UNiagaraComponent>(ArrowActor->GetComponentByClass(UNiagaraComponent::StaticClass()));
 
 				ArrowTrail->Activate();
-
 				ArrowActor = nullptr;
 			}
 
