@@ -5,13 +5,13 @@
 #include "GlobalCharacter.h"
 #include <Global/Data/StateEnums.h>
 
+// 시작할때 한번 업데이트
 void UGlobalAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 	OnMontageBlendingOut.AddDynamic(this, &UGlobalAnimInstance::MontageEnd);
 }
 
-// 시작할때 한번 업데이트
 void UGlobalAnimInstance::NativeUpdateAnimation(float _DeltaTime)
 {
 	Super::NativeUpdateAnimation(_DeltaTime);

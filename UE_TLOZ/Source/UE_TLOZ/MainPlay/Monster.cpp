@@ -39,11 +39,10 @@ void AMonster::BeginPlay()
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), 0);
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("LastDamageTime"), 0);
 
-
 	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::BeginWeaponOverLap);
 }
 
-void AMonster::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)
+void AMonster::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter = nullptr)
 {
 	Super::Damaged(_Damage, _AttackCharacter);
 

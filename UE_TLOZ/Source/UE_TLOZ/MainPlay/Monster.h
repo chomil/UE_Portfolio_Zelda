@@ -22,7 +22,10 @@ class UE_TLOZ_API AMonster : public AAICharacter
 
 	void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
 	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
+
+	UFUNCTION(BlueprintCallable)
 	void Attacked(float _Damage, AGlobalCharacter* _HitCharacter) override;
 
 private:

@@ -18,7 +18,7 @@ void UBTTask_ATTACK_JUMP_START::TickTask(UBehaviorTreeComponent& OwnerComp, uint
 	LookTarget(OwnerComp, DelataSeconds);
 
 
-	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(UBTTask_AIBase::GetAiState(OwnerComp));
+	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(GetAiState(OwnerComp));
 	float Time = Montage->CalculateSequenceLength();
 
 	if (Time <= GetStateTime(OwnerComp))

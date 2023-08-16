@@ -20,7 +20,7 @@ void UBTTask_FIND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	LookTarget(OwnerComp, DelataSeconds*2);
 
 
-	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(UBTTask_AIBase::GetAiState(OwnerComp));
+	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(GetAiState(OwnerComp));
 	float Time = Montage->CalculateSequenceLength();
 
 	if (Time <= GetStateTime(OwnerComp))

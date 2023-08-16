@@ -51,7 +51,7 @@ void AMainCharacter::BeginPlay()
 	AGamePlayMode* GamePlayMode = Cast<AGamePlayMode>(GameModePtr);
 	PlayMode = GamePlayMode;
 
-
+	
 	GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &AMainCharacter::MontageEnd);
 	
 	WeaponMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::BeginWeaponOverLap);
@@ -68,6 +68,7 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 
 	for (FAnimNotifyEventReference NotifyRef : GetMesh()->GetAnimInstance()->NotifyQueue.AnimNotifies)
 	{
@@ -535,13 +536,14 @@ void AMainCharacter::BowAttackEnd()
 				FVector Forward = ArrowMesh->GetForwardVector();
 
 				UProjectileMovementComponent* ArrowMove = Cast<UProjectileMovementComponent>(ArrowActor->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
+
 				ArrowMove->bSimulationEnabled = true;
 				ArrowMove->Velocity = (Forward * 3000.f);
-
 
 				UNiagaraComponent* ArrowTrail = Cast<UNiagaraComponent>(ArrowActor->GetComponentByClass(UNiagaraComponent::StaticClass()));
 
 				ArrowTrail->Activate();
+				ArrowActor->Tags.Add(TEXT("PlayerAttack"));
 				ArrowActor = nullptr;
 			}
 
@@ -583,8 +585,6 @@ float AMainCharacter::GetBowHandBlending()
 	case PLAYER_ANISTATE::WALK:
 	case PLAYER_ANISTATE::RUN:
 	case PLAYER_ANISTATE::DASH:
-	case PLAYER_ANISTATE::LAND:
-	case PLAYER_ANISTATE::JUMP:
 		if (bEquipBow)
 		{
 			return 1.0f;

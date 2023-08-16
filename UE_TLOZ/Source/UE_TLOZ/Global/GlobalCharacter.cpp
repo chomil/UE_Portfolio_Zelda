@@ -12,7 +12,7 @@ AGlobalCharacter::AGlobalCharacter()
 
 }
 
-void AGlobalCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)
+void AGlobalCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter = nullptr)
 {
 	HP -= _Damage;
 	HP = HP < 0 ? 0 : HP;
