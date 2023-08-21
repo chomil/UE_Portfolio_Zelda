@@ -23,11 +23,11 @@ void UBTTask_RETURN::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 
 	FVector PawnPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
-	FVector TargetPos = GetBlackboardComponent(OwnerComp)->GetValueAsVector("OriginPos");
+	FVector OriginPos = GetBlackboardComponent(OwnerComp)->GetValueAsVector("OriginPos");
 	PawnPos.Z = 0.0f;
-	TargetPos.Z = 0.0f;
+	OriginPos.Z = 0.0f;
 
-	FVector Dir = TargetPos - PawnPos;
+	FVector Dir = OriginPos - PawnPos;
 
 	GetGlobalCharacter(OwnerComp)->AddMovementInput(Dir);
 
@@ -37,4 +37,22 @@ void UBTTask_RETURN::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 		SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
 		return;
 	}
+
+	AActor* ResultTarget = Cast<AActor>(GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor")));
+	if (ResultTarget != nullptr)
+	{
+		FVector TargetPos =  ResultTarget->GetActorLocation();
+		TargetPos.Z = 0;
+		float Distance = (TargetPos - PawnPos).Length();
+		float Angle = FMath::Abs(GetTargetAngle(OwnerComp));
+
+		if (Distance < GetBlackboardComponent(OwnerComp)->GetValueAsFloat(TEXT("SearchRange")) * 0.1f)
+		{
+			if (Angle < 30.f)
+			{
+				SetStateChange(OwnerComp, MONSTER_AISTATE::CHASE);
+			}
+		}
+	}
+
 }

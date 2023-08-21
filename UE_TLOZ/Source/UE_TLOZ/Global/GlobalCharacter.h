@@ -67,6 +67,8 @@ public:
 
 	virtual void Attacked(float _Damage, AGlobalCharacter* _HitCharacter);
 
+	virtual void Stunned(bool _bStun);
+
 	float GetHP()
 	{
 		return HP;
@@ -122,13 +124,12 @@ protected:
 		float ATT = 1.f;
 
 
+	bool bIsStunning = false;
 
 private:
-	//UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-		int AniState = 0;
+	int AniState = 0;
 
-	//UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-		TMap<int, class UAnimMontage*> AllAnimations;
+	TMap<int, class UAnimMontage*> AllAnimations;
 
 	class UGlobalAnimInstance* GlobalAnimInstance = nullptr;
 

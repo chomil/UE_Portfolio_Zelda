@@ -17,10 +17,14 @@ void UBTTask_DEATH::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	float Time = Montage->CalculateSequenceLength();	
 	if (Time <= GetStateTime(OwnerComp))
 	{
-		GetGlobalCharacter(OwnerComp)->GetMesh()->SetSimulatePhysics(true);
-		GetGlobalCharacter(OwnerComp)->GetCharacterMovement()->DisableMovement();
+		GetGlobalCharacter(OwnerComp)->GetAnimInstance()->StopAllMontages(0);
+		if (MONSTER_TYPE::MONSTER == static_cast<MONSTER_TYPE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum("MonsterType")))
+		{
+			GetGlobalCharacter(OwnerComp)->GetMesh()->SetSimulatePhysics(true);
+			GetGlobalCharacter(OwnerComp)->GetCharacterMovement()->DisableMovement();
+		}
 	}
-	if (Time *4 <= GetStateTime(OwnerComp))
+	if (Time *2 <= GetStateTime(OwnerComp))
 	{
 		GetGlobalCharacter(OwnerComp)->Destroy();
 		return;

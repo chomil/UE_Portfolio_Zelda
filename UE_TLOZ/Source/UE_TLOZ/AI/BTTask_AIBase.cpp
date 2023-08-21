@@ -78,8 +78,7 @@ EBTNodeResult::Type UBTTask_AIBase::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	//태스크에서 플레이할 몽타주가 없으면 Fail
 	if (Montage == nullptr)
 	{
-		GetBlackboardComponent(OwnerComp)->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(MONSTER_AISTATE::IDLE));
-		ResetStateTime(OwnerComp);
+		SetStateChange(OwnerComp, static_cast<uint8>(MONSTER_AISTATE::IDLE));
 		return EBTNodeResult::Type::Failed;
 	}
 	return EBTNodeResult::Type::InProgress;
@@ -107,18 +106,35 @@ void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	LastDamageTime += DeltaSeconds;
 	BlackBoard->SetValueAsFloat(TEXT("LastDamageTime"), LastDamageTime);
 
-
+	MONSTER_AISTATE State =  static_cast<MONSTER_AISTATE>(BlackBoard->GetValueAsEnum(TEXT("AIState")));
+	
+	if (State == MONSTER_AISTATE::DEATH)
+	{
+		return;
+	}
 
 	if (Dead(OwnerComp))
 	{
 		SetStateChange(OwnerComp, MONSTER_AISTATE::DEATH);
 		return;
 	}
+
+
+	if (GetBlackboardComponent(OwnerComp)->GetValueAsBool(TEXT("Stun")) == true)
+	{
+		if (State != MONSTER_AISTATE::STUN_START && State != MONSTER_AISTATE::STUN_LOOP && State != MONSTER_AISTATE::STUN_END)
+		{
+			SetStateChange(OwnerComp, MONSTER_AISTATE::STUN_START);
+			return;
+		}
+	}
+	
 	if (Damaged(OwnerComp))
 	{
 		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
 		return;
-	}	
+	}
+	
 	AActor* ResultActor = GetTargetSearch(OwnerComp);
 	GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), ResultActor);
 }
@@ -212,6 +228,12 @@ bool UBTTask_AIBase::Damaged(UBehaviorTreeComponent& OwnerComp)
 	if (Damage > 0.f)
 	{
 		GetBlackboardComponent(OwnerComp)->SetValueAsFloat(TEXT("Damage"), 0.f);
+
+
+		if (GetBlackboardComponent(OwnerComp)->GetValueAsBool(TEXT("Stun")) == true)
+		{
+			return false;
+		}
 
 		MONSTER_AISTATE State = static_cast<MONSTER_AISTATE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("AIState")));
 		if (State == MONSTER_AISTATE::HIT || State == MONSTER_AISTATE::DEATH || 

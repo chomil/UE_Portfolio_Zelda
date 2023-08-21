@@ -30,14 +30,15 @@ void AMonster::BeginPlay()
 	Super::BeginPlay();
 
 
-	GetBlackboardComponent()->SetValueAsEnum(TEXT("AIState"), static_cast<int>(MONSTER_AISTATE::IDLE));
+	GetBlackboardComponent()->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(MONSTER_AISTATE::IDLE));
 	GetBlackboardComponent()->SetValueAsString(TEXT("TargetTag"), TEXT("Player"));
-	GetBlackboardComponent()->SetValueAsFloat(TEXT("SearchRange"), 1500.0f);
+	GetBlackboardComponent()->SetValueAsFloat(TEXT("SearchRange"), 2400.f);
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("AttackRange"), 120.0f);
 	FVector Pos = GetActorLocation();
 	GetBlackboardComponent()->SetValueAsVector(TEXT("OriginPos"), Pos);
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), 0);
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("LastDamageTime"), 0);
+	GetBlackboardComponent()->SetValueAsEnum(TEXT("MonsterType"), static_cast<uint8>(MonsterType));
 
 	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::BeginWeaponOverLap);
 }
@@ -48,6 +49,13 @@ void AMonster::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter = nullp
 
 
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), _Damage);
+}
+
+void AMonster::Stunned(bool _bStun)
+{
+	Super::Stunned(_bStun);
+
+	GetBlackboardComponent()->SetValueAsBool(TEXT("Stun"), bIsStunning);
 }
 
 void AMonster::Attacked(float _Damage, AGlobalCharacter* _HitCharacter)

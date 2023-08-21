@@ -23,6 +23,11 @@ void AGlobalCharacter::Attacked(float _Damage, AGlobalCharacter* _HitCharacter)
 	_HitCharacter->Damaged(_Damage, this);
 }
 
+void AGlobalCharacter::Stunned(bool _bStun)
+{
+	bIsStunning = _bStun;
+}
+
 // Called when the game starts or when spawned
 void AGlobalCharacter::BeginPlay()
 {

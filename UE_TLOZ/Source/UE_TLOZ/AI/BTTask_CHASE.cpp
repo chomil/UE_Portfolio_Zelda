@@ -54,7 +54,7 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		FVector OriginDir = OriginPos - PawnPos;
 
 		//시작 위치로부터 멀어지면
-		if (OriginDir.Size() >= SearchRange * 5.f)
+		if (OriginDir.Size() >= SearchRange * 2.f)
 		{
 			GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
 			SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
@@ -62,7 +62,7 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		}
 
 		//타깃과 멀어지면
-		if (SearchRange * 1.2f < Dir.Size())
+		if (SearchRange< Dir.Size())
 		{
 			GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
 			SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
@@ -89,12 +89,15 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		}
 		else if (AttackRange * 2 <= Dir.Size() && Dir.Size() <= AttackRange * 4)
 		{
-			//랜덤으로 점프공격
-			int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 100);
-			if (RandomInt == 1)
+			if (static_cast<MONSTER_TYPE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("MonsterType"))) == MONSTER_TYPE::MONSTER)
 			{
-				SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_JUMP_START);
-				return;
+				//랜덤으로 점프공격
+				int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 100);
+				if (RandomInt == 1)
+				{
+					SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_JUMP_START);
+					return;
+				}
 			}
 		}
 	}
