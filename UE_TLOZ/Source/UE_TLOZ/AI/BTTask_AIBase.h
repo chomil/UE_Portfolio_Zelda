@@ -55,4 +55,8 @@ protected:
 
 	bool Damaged(UBehaviorTreeComponent& OwnerComp);
 	bool Dead(UBehaviorTreeComponent& OwnerComp);
+
+
+	//AI Path Find
+	//TArray<FVector> PathFind();
 };

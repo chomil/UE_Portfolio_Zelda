@@ -30,6 +30,13 @@ struct UE_TLOZ_API FMonsterData : public FTableRowBase
 		float ATT;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+		float SearchRange = 2400.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+		float AttackRange = 120.f;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 		class UBehaviorTree* AI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")

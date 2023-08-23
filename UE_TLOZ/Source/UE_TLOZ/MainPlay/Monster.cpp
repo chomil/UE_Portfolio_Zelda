@@ -25,6 +25,10 @@ void AMonster::BeginPlay()
 		HP = CurMonsterData->HP;
 		ATT = CurMonsterData->ATT;
 		MonsterType = CurMonsterData->MonsterType;
+
+		GetBlackboardComponent()->SetValueAsFloat(TEXT("SearchRange"), CurMonsterData->SearchRange);
+		GetBlackboardComponent()->SetValueAsFloat(TEXT("AttackRange"), CurMonsterData->AttackRange);
+		GetBlackboardComponent()->SetValueAsEnum(TEXT("MonsterType"), static_cast<uint8>(MonsterType));
 	}
 
 	Super::BeginPlay();
@@ -32,13 +36,10 @@ void AMonster::BeginPlay()
 
 	GetBlackboardComponent()->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(MONSTER_AISTATE::IDLE));
 	GetBlackboardComponent()->SetValueAsString(TEXT("TargetTag"), TEXT("Player"));
-	GetBlackboardComponent()->SetValueAsFloat(TEXT("SearchRange"), 2400.f);
-	GetBlackboardComponent()->SetValueAsFloat(TEXT("AttackRange"), 120.0f);
 	FVector Pos = GetActorLocation();
 	GetBlackboardComponent()->SetValueAsVector(TEXT("OriginPos"), Pos);
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), 0);
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("LastDamageTime"), 0);
-	GetBlackboardComponent()->SetValueAsEnum(TEXT("MonsterType"), static_cast<uint8>(MonsterType));
 
 	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::BeginWeaponOverLap);
 }
