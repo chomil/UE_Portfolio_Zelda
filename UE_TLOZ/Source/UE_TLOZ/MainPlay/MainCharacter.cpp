@@ -157,7 +157,31 @@ void AMainCharacter::Tick(float DeltaTime)
 		bUseControllerRotationYaw = false;
 	}
 
-	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+	PLAYER_ANISTATE CurAniState = static_cast<PLAYER_ANISTATE>(GetAniState());
+
+
+	//State-Stamina
+	if (CurAniState == PLAYER_ANISTATE::DASH)
+	{
+		SP -= DeltaTime * 0.25f;
+		if (SP <= 0)
+		{
+			SP = 0;
+			bTired = true;
+		}
+	}
+	else
+	{
+		SP += DeltaTime * 0.5f;
+		if (SP >= MaxSP)
+		{
+			SP = MaxSP;
+			bTired = false;
+		}
+	}
+
+	//State-Attack/Jump
+	switch (CurAniState)
 	{
 	case PLAYER_ANISTATE::JUMP:		
 		if (JumpCurrentCount == 0)
@@ -199,7 +223,6 @@ void AMainCharacter::Tick(float DeltaTime)
 
 	
 	PlayMode->SetWidgetText(GetActorLocation().ToString());
-	PLAYER_ANISTATE state = static_cast<PLAYER_ANISTATE>(GetAniState());
 
 }
 
@@ -340,6 +363,12 @@ void AMainCharacter::MoveForward(float Val)
 
 void AMainCharacter::Dash(float Val)
 {
+	if (bTired)
+	{
+		bIsDash = false;
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		return;
+	}
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
@@ -355,7 +384,7 @@ void AMainCharacter::Dash(float Val)
 		if (bIsDash == false)
 		{
 			bIsDash = true;
-			GetCharacterMovement()->MaxWalkSpeed = 450.f;
+			GetCharacterMovement()->MaxWalkSpeed = 550.f;
 		}
 	}
 	else

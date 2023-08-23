@@ -74,11 +74,6 @@ public:
 		return HP;
 	}
 
-	float GetSP()
-	{
-		return SP;
-	}
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -113,12 +108,13 @@ protected:
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
 	//	float BaseLookUpRate;
 
-
+	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	float MaxHP = 1.f;
 	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
 		float HP = 1.f;
 
-	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
-		float SP = 1.f;
+
+
 
 	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
 		float ATT = 1.f;

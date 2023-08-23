@@ -99,6 +99,14 @@ private:
 	AActor* ArrowActor = nullptr;
 
 
+	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	float MaxSP = 1.f;
+	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	float SP = 1.f;
+	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	bool bTired = false;
+
+
 	UFUNCTION()
 		void BeginWeaponOverLap(
 			UPrimitiveComponent* OverlappedComponent,
