@@ -24,7 +24,7 @@ void UBTTask_DEATH::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 			GetGlobalCharacter(OwnerComp)->GetCharacterMovement()->DisableMovement();
 		}
 	}
-	if (Time *2 <= GetStateTime(OwnerComp))
+	if (Time + 2.0f <= GetStateTime(OwnerComp))
 	{
 		GetGlobalCharacter(OwnerComp)->Destroy();
 		return;

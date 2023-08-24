@@ -32,6 +32,8 @@ class UE_TLOZ_API AMonster : public AAICharacter
 	UFUNCTION(BlueprintCallable)
 	void Attacked(float _Damage, AGlobalCharacter* _HitCharacter) override;
 
+	void Tick(float _DeltaTime) override;
+
 private:
 	UPROPERTY(Category = "Animation", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		FName DataName = "NONE";
@@ -42,6 +44,8 @@ private:
 
 	MONSTER_TYPE MonsterType;
 
+	UPROPERTY(Category = "Monster", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float DeathTime = 0;
 
 	UFUNCTION()
 		void BeginWeaponOverLap(

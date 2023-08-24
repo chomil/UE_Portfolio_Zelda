@@ -22,6 +22,7 @@ void AMonster::BeginPlay()
 		SetAllAnimation<MONSTER_AISTATE>(CurMonsterData->MapAnimation);
 		SetAniState<MONSTER_AISTATE>(MONSTER_AISTATE::IDLE);
 
+		MaxHP = CurMonsterData->HP;
 		HP = CurMonsterData->HP;
 		ATT = CurMonsterData->ATT;
 		MonsterType = CurMonsterData->MonsterType;
@@ -42,6 +43,8 @@ void AMonster::BeginPlay()
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("LastDamageTime"), 0);
 
 	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::BeginWeaponOverLap);
+
+
 }
 
 void AMonster::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter = nullptr)
@@ -50,6 +53,8 @@ void AMonster::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter = nullp
 
 
 	GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), _Damage);
+
+	
 }
 
 void AMonster::Stunned(bool _bStun)
@@ -62,6 +67,16 @@ void AMonster::Stunned(bool _bStun)
 void AMonster::Attacked(float _Damage, AGlobalCharacter* _HitCharacter)
 {
 	Super::Attacked(_Damage, _HitCharacter);
+}
+
+void AMonster::Tick(float _DeltaTime)
+{
+	Super::Tick(_DeltaTime);
+
+	if (HP <= 0)
+	{
+		DeathTime += _DeltaTime;
+	}
 }
 
 void AMonster::BeginWeaponOverLap(
