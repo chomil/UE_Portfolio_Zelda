@@ -9,6 +9,7 @@ AMovableActor::AMovableActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	bAsyncPhysicsTickEnabled = true;
+	MaxRecord = 600;
 }
 
 // Called when the game starts or when spawned
@@ -37,7 +38,7 @@ void AMovableActor::Tick(float DeltaTime)
 			if (Transform.Equals(TransformRecord.Last()) == false)
 			{
 				TransformRecord.EmplaceLast(Transform);
-				if (TransformRecord.Num() > 600)
+				if (TransformRecord.Num() > MaxRecord)
 				{
 					TransformRecord.PopFirst();
 				}
@@ -61,6 +62,9 @@ void AMovableActor::Tick(float DeltaTime)
 			TransformRecord.PopLast();
 		}
 	}
+
+
+	CurRecord = TransformRecord.Num();
 }
 
 void AMovableActor::SetTimeRewind(bool _bTimeRewind)

@@ -574,6 +574,9 @@ void AMainCharacter::BowAttackEnd()
 				ArrowTrail->Activate();
 				ArrowActor->Tags.Add(TEXT("PlayerAttack"));
 				ArrowActor = nullptr;
+
+
+
 			}
 
 		}

@@ -32,6 +32,11 @@ public:
 private:
 	//TArray<FTransform> TransformRecord;
 	TDeque<FTransform> TransformRecord;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	int CurRecord = 0;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	int MaxRecord = 0;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bTimeRewind = false;
 
 	UStaticMeshComponent* Mesh = nullptr;
