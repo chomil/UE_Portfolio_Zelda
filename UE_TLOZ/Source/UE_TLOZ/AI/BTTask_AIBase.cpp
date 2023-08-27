@@ -3,6 +3,8 @@
 
 #include "AI/BTTask_AIBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 UBTTask_AIBase::UBTTask_AIBase()
 {
@@ -269,6 +271,7 @@ bool UBTTask_AIBase::Dead(UBehaviorTreeComponent& OwnerComp)
 
 
 
+
 class AActor* UBTTask_AIBase::GetTargetSearch(UBehaviorTreeComponent& OwnerComp)
 {
 	FString TargetTag = GetBlackboardComponent(OwnerComp)->GetValueAsString(TEXT("TargetTag"));
@@ -304,4 +307,33 @@ class AActor* UBTTask_AIBase::GetTargetSearch(UBehaviorTreeComponent& OwnerComp)
 	}
 
 	return ResultActor;
+}
+
+
+TArray<FVector> UBTTask_AIBase::PathFind(UBehaviorTreeComponent& _OwnerComp, AActor* _TargetActor)
+{
+	if (_TargetActor == nullptr)
+	{
+		return TArray<FVector>();
+	}
+	return PathFind(_OwnerComp, _TargetActor->GetActorLocation());
+}
+
+TArray<FVector> UBTTask_AIBase::PathFind(UBehaviorTreeComponent& _OwnerComp, FVector _TargetPos)
+{
+	UNavigationPath* Path = nullptr;
+	FVector StartPos = GetGlobalCharacter(_OwnerComp)->GetActorLocation();
+
+	Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), StartPos, _TargetPos);
+
+	if (nullptr == Path)
+	{
+		return TArray<FVector>();
+	}
+	if (false == Path->IsValid())
+	{
+		return TArray<FVector>();
+	}
+
+	return Path->PathPoints;
 }

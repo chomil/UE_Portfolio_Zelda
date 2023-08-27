@@ -58,5 +58,8 @@ protected:
 
 
 	//AI Path Find
-	//TArray<FVector> PathFind();
+	TArray<FVector> PathFind(UBehaviorTreeComponent& _OwnerComp, AActor* _TargetActor);
+
+
+	TArray<FVector> PathFind(UBehaviorTreeComponent& _OwnerComp, FVector _TargetPos);
 };

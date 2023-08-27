@@ -163,7 +163,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	//State-Stamina
 	if (CurAniState == PLAYER_ANISTATE::DASH)
 	{
-		SP -= DeltaTime * 0.25f;
+		SP -= DeltaTime * 0.2f;
 		if (SP <= 0)
 		{
 			SP = 0;
@@ -411,7 +411,7 @@ void AMainCharacter::PlayerJump()
 
 void AMainCharacter::AttackAction()
 {
-	if (bEquipBow)
+	if (bEquipBow && GetAniState() != (int)PLAYER_ANISTATE::JUMP)
 	{
 		SetAniState(PLAYER_ANISTATE::BOW_OFF);
 		ChangeWeaponSocket(BowMeshComponent, "Bow_Wait");
@@ -430,16 +430,27 @@ void AMainCharacter::AttackAction()
 		GetCharacterMovement()->AddImpulse(GetActorForwardVector() * 500, true);
 		SetAniState(PLAYER_ANISTATE::ATTACK_DASH);
 		ChangeWeaponSocket(WeaponMeshComponent, "Weapon_R");
+
 		break;
 	case PLAYER_ANISTATE::IDLE:
 	case PLAYER_ANISTATE::RUN:
 	{
+
 		if (bEquipSword == false)
 		{
 			SetAniState(PLAYER_ANISTATE::SWORD_ON);
 			break;
 		}
 		else
+		{
+			SetAniState(PLAYER_ANISTATE::ATTACK1);
+			break;
+		}
+	}
+
+	case PLAYER_ANISTATE::JUMP:
+	{
+		if(bEquipSword==true)
 		{
 			SetAniState(PLAYER_ANISTATE::ATTACK1);
 			break;

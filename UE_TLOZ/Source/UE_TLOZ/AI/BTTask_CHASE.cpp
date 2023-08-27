@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "DrawDebugHelpers.h"
 
 #include "AI/BTTask_CHASE.h"
 
@@ -35,6 +36,8 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	float TargetLookAngle = GetTargetAngle(OwnerComp);
 
 
+
+
 	//ÀÌµ¿
 	{
 		FVector PawnPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
@@ -44,7 +47,23 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 
 		FVector Dir = TargetPos - PawnPos;
 
-		GetGlobalCharacter(OwnerComp)->AddMovementInput(Dir);
+
+		TArray<FVector> Path = PathFind(OwnerComp, TargetActor);
+
+		if (Path.Num() <= 1)
+		{
+			GetGlobalCharacter(OwnerComp)->AddMovementInput(Dir);
+		}
+		else
+		{
+			FVector PathDir = Path[1] - PawnPos;
+			GetGlobalCharacter(OwnerComp)->AddMovementInput(PathDir);
+		}
+
+		//AAIMonCon* AICon = Cast<AAIMonCon>(GetGlobalCharacter(OwnerComp)->GetController());
+		//AICon->MoveToActor(TargetActor);
+
+
 
 		FVector OriginPos = GetBlackboardComponent(OwnerComp)->GetValueAsVector(TEXT("OriginPos"));
 		float SearchRange = GetBlackboardComponent(OwnerComp)->GetValueAsFloat(TEXT("SearchRange"));
