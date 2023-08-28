@@ -18,9 +18,9 @@ EBTNodeResult::Type UBTTask_CHASE::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 	return EBTNodeResult::Type::InProgress;
 }
 
-void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
+void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
+	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
 
 	UObject* TargetObject = GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor"));
@@ -57,7 +57,10 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		else
 		{
 			FVector PathDir = Path[1] - PawnPos;
+			PathDir.Z = 0;
 			GetGlobalCharacter(OwnerComp)->AddMovementInput(PathDir);
+
+			UE_LOG(LogTemp, Log, TEXT("PathFinding"));
 		}
 
 		//AAIMonCon* AICon = Cast<AAIMonCon>(GetGlobalCharacter(OwnerComp)->GetController());
@@ -89,35 +92,72 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		}
 
 		// 충분히 근접했다.
-		if (Dir.Size() <= AttackRange)
+		MONSTER_TYPE Type = static_cast<MONSTER_TYPE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("MonsterType")));
+		switch (Type)
 		{
-			//+-30도 이내면 공격 
-			if (FMath::Abs(TargetLookAngle) < 30.f)
+		case MONSTER_TYPE::NONE:
+			break;
+		case MONSTER_TYPE::MONSTER:
+			if (Dir.Size() <= AttackRange)
 			{
-				int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 3);
-				if (RandomInt == 1)
+				//+-30도 이내면 공격 
+				if (FMath::Abs(TargetLookAngle) < 30.f)
 				{
-					SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_STRONG);
-				}
-				else
-				{
-					SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK);
-				}
-				return;
-			}
-		}
-		else if (AttackRange * 2 <= Dir.Size() && Dir.Size() <= AttackRange * 4)
-		{
-			if (static_cast<MONSTER_TYPE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("MonsterType"))) == MONSTER_TYPE::MONSTER)
-			{
-				//랜덤으로 점프공격
-				int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 100);
-				if (RandomInt == 1)
-				{
-					SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_JUMP_START);
+					int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 3);
+					if (RandomInt == 1)
+					{
+						SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_STRONG);
+					}
+					else
+					{
+						SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK);
+					}
 					return;
 				}
 			}
+			else if (AttackRange * 2 <= Dir.Size() && Dir.Size() <= AttackRange * 4)
+			{
+				if (static_cast<MONSTER_TYPE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("MonsterType"))) == MONSTER_TYPE::MONSTER)
+				{
+					//랜덤으로 점프공격
+					int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 100);
+					if (RandomInt == 1 && Path.Num() <= 2)
+					{
+						SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_JUMP_START);
+						return;
+					}
+				}
+			}
+			break;
+		case MONSTER_TYPE::BOSS_HINOX:
+			if (Dir.Size() <= AttackRange) //근거리일때
+			{
+				//+-30도 이내면 공격 
+				if (FMath::Abs(TargetLookAngle) < 30.f)
+				{
+					int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 3);
+					if (RandomInt == 1)
+					{
+						SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK);
+					}
+					else
+					{
+						SetStateChange(OwnerComp, MONSTER_AISTATE::ATTACK_HAND);
+					}
+					return;
+				}
+			}
+			else //원거리일때
+			{					
+				int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 100);
+				if (RandomInt == 1)
+				{
+					//SetStateChange(OwnerComp, MONSTER_AISTATE::STONE_GET);
+				}
+			}
+			break;
+		default:
+			break;
 		}
 	}
 }

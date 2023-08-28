@@ -49,7 +49,8 @@ protected:
 
 	void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	void LookTarget(UBehaviorTreeComponent& OwnerComp, float DelataSeconds, bool bForce = false);
+	void LookTarget(UBehaviorTreeComponent& OwnerComp, float DeltaSeconds, bool bForce = false);
+	void LookTarget(UBehaviorTreeComponent& OwnerComp, FVector TargetPos, float DeltaSeconds, bool bForce = false);
 
 	float GetTargetAngle(UBehaviorTreeComponent& OwnerComp);
 

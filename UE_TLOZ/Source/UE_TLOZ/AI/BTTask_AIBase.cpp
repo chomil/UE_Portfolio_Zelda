@@ -5,6 +5,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "Components/CapsuleComponent.h"
+
 
 UBTTask_AIBase::UBTTask_AIBase()
 {
@@ -142,7 +144,7 @@ void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 }
 
 
-void UBTTask_AIBase::LookTarget(UBehaviorTreeComponent& OwnerComp, float DelataSeconds, bool bForce)
+void UBTTask_AIBase::LookTarget(UBehaviorTreeComponent& OwnerComp, float DeltaSeconds, bool bForce)
 {
 	AActor* TargetActor = Cast<AActor>(GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor")));
 
@@ -152,41 +154,44 @@ void UBTTask_AIBase::LookTarget(UBehaviorTreeComponent& OwnerComp, float DelataS
 		return;
 	}
 
+	FVector TargetPos = TargetActor->GetActorLocation();
+	LookTarget(OwnerComp, TargetPos, DeltaSeconds, bForce);
+}
+
+void UBTTask_AIBase::LookTarget(UBehaviorTreeComponent& OwnerComp, FVector TargetPos, float DeltaSeconds, bool bForce)
+{
 	float Degree = 0.f;
-	//È¸Àü
+
+	FVector ThisPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
+	TargetPos.Z = 0.0f;
+	ThisPos.Z = 0.0f;
+
+	FVector Dir = TargetPos - ThisPos;
+	Dir.Normalize();
+
+	FVector ThisForward = GetGlobalCharacter(OwnerComp)->GetActorForwardVector();
+	ThisForward.Normalize();
+
+	FVector Cross = FVector::CrossProduct(ThisForward, Dir);
+	float Angle0 = Dir.Rotation().Yaw;
+	float Angle1 = ThisForward.Rotation().Yaw;
+	Degree = Angle0 - Angle1;
+
+	if (bForce)
 	{
-		FVector TargetPos = TargetActor->GetActorLocation();
-		FVector ThisPos = GetGlobalCharacter(OwnerComp)->GetActorLocation();
-		TargetPos.Z = 0.0f;
-		ThisPos.Z = 0.0f;
-
-		FVector Dir = TargetPos - ThisPos;
-		Dir.Normalize();
-
-		FVector ThisForward = GetGlobalCharacter(OwnerComp)->GetActorForwardVector();
-		ThisForward.Normalize();
-
-		FVector Cross = FVector::CrossProduct(ThisForward, Dir);
-		float Angle0 = Dir.Rotation().Yaw;
-		float Angle1 = ThisForward.Rotation().Yaw;
-		Degree = Angle0 - Angle1;
-
-		if (bForce)
+		FRotator Rot = Dir.Rotation();
+		GetGlobalCharacter(OwnerComp)->SetActorRotation(Rot);
+	}
+	else
+	{
+		if (FMath::Abs(Degree) >= 5.0f)
 		{
+			FRotator Rot = FRotator::MakeFromEuler({ 0, 0, Cross.Z * 500.0f * DeltaSeconds });
+			GetGlobalCharacter(OwnerComp)->AddActorWorldRotation(Rot);
+		}
+		else {
 			FRotator Rot = Dir.Rotation();
 			GetGlobalCharacter(OwnerComp)->SetActorRotation(Rot);
-		}
-		else
-		{
-			if (FMath::Abs(Degree) >= 5.0f)
-			{
-				FRotator Rot = FRotator::MakeFromEuler({ 0, 0, Cross.Z * 500.0f * DelataSeconds });
-				GetGlobalCharacter(OwnerComp)->AddActorWorldRotation(Rot);
-			}
-			else {
-				FRotator Rot = Dir.Rotation();
-				GetGlobalCharacter(OwnerComp)->SetActorRotation(Rot);
-			}
 		}
 	}
 }
@@ -316,13 +321,22 @@ TArray<FVector> UBTTask_AIBase::PathFind(UBehaviorTreeComponent& _OwnerComp, AAc
 	{
 		return TArray<FVector>();
 	}
-	return PathFind(_OwnerComp, _TargetActor->GetActorLocation());
+	UCapsuleComponent* Capsule = Cast<AGlobalCharacter>(_TargetActor)->GetCapsuleComponent();
+	float Height = Capsule->GetScaledCapsuleHalfHeight();
+	FVector TargetPos = _TargetActor->GetActorLocation();
+	TargetPos.Z -= Height;
+
+	return PathFind(_OwnerComp, TargetPos);
 }
 
 TArray<FVector> UBTTask_AIBase::PathFind(UBehaviorTreeComponent& _OwnerComp, FVector _TargetPos)
 {
 	UNavigationPath* Path = nullptr;
 	FVector StartPos = GetGlobalCharacter(_OwnerComp)->GetActorLocation();
+
+	UCapsuleComponent* Capsule = GetGlobalCharacter(_OwnerComp)->GetCapsuleComponent();
+	float Height = Capsule->GetScaledCapsuleHalfHeight();
+	StartPos.Z -= Height;
 
 	Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), StartPos, _TargetPos);
 

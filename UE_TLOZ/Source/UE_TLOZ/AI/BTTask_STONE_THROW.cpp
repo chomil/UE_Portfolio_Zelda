@@ -10,10 +10,11 @@ EBTNodeResult::Type UBTTask_STONE_THROW::ExecuteTask(UBehaviorTreeComponent& Own
 	return EBTNodeResult::Type::InProgress;
 }
 
-void UBTTask_STONE_THROW::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
+void UBTTask_STONE_THROW::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
+	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
+	LookTarget(OwnerComp, DeltaSeconds);
 
 	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(GetAiState(OwnerComp));
 	float Time = Montage->CalculateSequenceLength();

@@ -10,9 +10,9 @@ EBTNodeResult::Type UBTTask_ATTACK_HAND::ExecuteTask(UBehaviorTreeComponent& Own
 	return EBTNodeResult::Type::InProgress;
 }
 
-void UBTTask_ATTACK_HAND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DelataSeconds)
+void UBTTask_ATTACK_HAND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	Super::TickTask(OwnerComp, NodeMemory, DelataSeconds);
+	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
 
 	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(GetAiState(OwnerComp));
