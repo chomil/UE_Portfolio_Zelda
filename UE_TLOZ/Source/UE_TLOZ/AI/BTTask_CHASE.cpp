@@ -59,8 +59,6 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 			FVector PathDir = Path[1] - PawnPos;
 			PathDir.Z = 0;
 			GetGlobalCharacter(OwnerComp)->AddMovementInput(PathDir);
-
-			UE_LOG(LogTemp, Log, TEXT("PathFinding"));
 		}
 
 		//AAIMonCon* AICon = Cast<AAIMonCon>(GetGlobalCharacter(OwnerComp)->GetController());

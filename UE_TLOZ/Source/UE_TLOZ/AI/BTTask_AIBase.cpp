@@ -6,6 +6,8 @@
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "Components/CapsuleComponent.h"
+#include "NavMesh/RecastNavMesh.h"
+
 
 
 UBTTask_AIBase::UBTTask_AIBase()
@@ -338,7 +340,34 @@ TArray<FVector> UBTTask_AIBase::PathFind(UBehaviorTreeComponent& _OwnerComp, FVe
 	float Height = Capsule->GetScaledCapsuleHalfHeight();
 	StartPos.Z -= Height;
 
-	Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), StartPos, _TargetPos);
+	TArray<AActor*> RecastNavMeshs;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARecastNavMesh::StaticClass(), RecastNavMeshs);
+	
+	MONSTER_TYPE Type = static_cast<MONSTER_TYPE>(GetBlackboardComponent(_OwnerComp)->GetValueAsEnum(TEXT("MonsterType")));
+	AActor* RecastActor = nullptr;
+	for(AActor* Recast : RecastNavMeshs)
+	{
+		if (Type == MONSTER_TYPE::BOSS_HINOX)
+		{
+			if (Recast->GetName() == FString("RecastNavMesh-Boss"))
+			{
+				UE_LOG(LogTemp, Log, TEXT("Boss PathFinding"));
+				RecastActor = Recast;
+				break;
+			}
+		}
+		else
+		{
+			if (Recast->GetName() == FString("RecastNavMesh-Default"))
+			{
+				UE_LOG(LogTemp, Log, TEXT("Default PathFinding"));
+				RecastActor = Recast;
+				break;
+			}
+		}
+	}
+
+	Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), StartPos, _TargetPos, RecastActor);
 
 	if (nullptr == Path)
 	{
