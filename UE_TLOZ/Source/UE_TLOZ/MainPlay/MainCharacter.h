@@ -42,6 +42,8 @@ public:
 	void BowAttackStart();
 	void BowAttackEnd();
 
+
+
 	UFUNCTION(BlueprintCallable)
 		float GetRightHandBlending();
 
@@ -56,7 +58,10 @@ public:
 
 	void ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _SocketName);
 
+	//Inventory
 
+	UFUNCTION(BlueprintCallable)
+	void InvenWindowOnOff();
 
 public:
 	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)

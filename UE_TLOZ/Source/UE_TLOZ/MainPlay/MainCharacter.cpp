@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraComponent.h"
+#include "MainHUD.h"
 
 
 
@@ -256,6 +257,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_RClick", EKeys::RightMouseButton));
 
 
+		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("InvenWindow", EKeys::I));
+
+
 	}
 
 	PlayerInputComponent->BindAxis("Player_MoveForward", this, &AMainCharacter::MoveForward);
@@ -268,6 +272,10 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Player_LClick", EInputEvent::IE_Pressed, this, &AMainCharacter::AttackAction);
 	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Repeat, this, &AMainCharacter::BowAttackStart);
 	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Released, this, &AMainCharacter::BowAttackEnd);
+
+
+	PlayerInputComponent->BindAction("InvenWindow", EInputEvent::IE_Pressed, this, &AMainCharacter::InvenWindowOnOff);
+
 
 }
 
@@ -691,6 +699,17 @@ void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _Sock
 	{
 		bEquipBow = true;
 	}
+}
+
+void AMainCharacter::InvenWindowOnOff()
+{
+	APlayerController* HUDController = Cast<APlayerController>(GetController());
+	AMainHUD* HUD =  HUDController->GetHUD<AMainHUD>();
+	if (HUD == nullptr || HUD->IsValidLowLevel() == false)
+	{
+		return;
+	}
+	HUD->GetMainWidget()->ToggleInvenShow();
 }
 
 void AMainCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)

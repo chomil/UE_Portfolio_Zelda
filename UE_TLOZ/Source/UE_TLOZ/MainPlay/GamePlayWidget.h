@@ -20,5 +20,13 @@ class UE_TLOZ_API UGamePlayWidget : public UUserWidget
 public:
 	UPROPERTY(BlueprintReadWrite)
 	FString UserText;
+
+
+public:
+	void ToggleInvenShow();
+
+private:
+	UPROPERTY(Category = "Visible", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	ESlateVisibility InventoryVisible = ESlateVisibility::Hidden;
 	
 };

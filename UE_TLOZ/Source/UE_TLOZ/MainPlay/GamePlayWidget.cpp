@@ -19,3 +19,8 @@ void UGamePlayWidget::NativeConstruct()
 	AGamePlayMode* GamePlayMode = Cast<AGamePlayMode>(GameModePtr);
 	GamePlayMode->SetWidget(this);
 }
+
+void UGamePlayWidget::ToggleInvenShow()
+{
+	InventoryVisible = (InventoryVisible == ESlateVisibility::Hidden) ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+}
