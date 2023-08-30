@@ -32,6 +32,9 @@ class UE_TLOZ_API AMonster : public AAICharacter
 	UFUNCTION(BlueprintCallable)
 	void Attacked(float _Damage, AGlobalCharacter* _HitCharacter) override;
 
+	UFUNCTION(BlueprintCallable)
+	void GetStone();
+
 	void Tick(float _DeltaTime) override;
 
 private:

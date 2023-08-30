@@ -4,6 +4,8 @@
 #include "MainPlay/Monster.h"
 #include <Global/GlobalGameInstance.h>
 #include <Global/Data/MonsterData.h>
+#include "Kismet/GameplayStatics.h"
+#include "NavMesh/RecastNavMesh.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 AMonster::AMonster()
@@ -45,6 +47,32 @@ void AMonster::BeginPlay()
 	WeaponComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::BeginWeaponOverLap);
 
 
+
+	TArray<AActor*> RecastNavMeshs;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARecastNavMesh::StaticClass(), RecastNavMeshs);
+	AActor* RecastActor = nullptr;
+	for (AActor* Recast : RecastNavMeshs)
+	{
+		if (MonsterType == MONSTER_TYPE::BOSS_HINOX)
+		{
+			if (Recast->GetName() == FString("RecastNavMesh-Boss"))
+			{
+				UE_LOG(LogTemp, Log, TEXT("Boss PathFinding Attach"));
+				RecastActor = Recast;
+				break;
+			}
+		}
+		else
+		{
+			if (Recast->GetName() == FString("RecastNavMesh-Default"))
+			{
+				UE_LOG(LogTemp, Log, TEXT("Default PathFinding Attach"));
+				RecastActor = Recast;
+				break;
+			}
+		}
+	}
+	GetBlackboardComponent()->SetValueAsObject(TEXT("NaviMesh"), RecastActor);
 }
 
 void AMonster::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter = nullptr)
@@ -67,6 +95,10 @@ void AMonster::Stunned(bool _bStun)
 void AMonster::Attacked(float _Damage, AGlobalCharacter* _HitCharacter)
 {
 	Super::Attacked(_Damage, _HitCharacter);
+}
+
+void AMonster::GetStone()
+{
 }
 
 void AMonster::Tick(float _DeltaTime)
