@@ -18,6 +18,7 @@ public:
 	AMainHUD();
 	~AMainHUD();
 
+	UFUNCTION(BlueprintCallable)
 	UGamePlayWidget* GetMainWidget()
 	{
 		return MainWidget;

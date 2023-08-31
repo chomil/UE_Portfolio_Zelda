@@ -23,7 +23,10 @@ public:
 
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void ToggleInvenShow();
+	UFUNCTION(BlueprintCallable)
+	bool IsInvenShow();
 
 private:
 	UPROPERTY(Category = "Visible", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))

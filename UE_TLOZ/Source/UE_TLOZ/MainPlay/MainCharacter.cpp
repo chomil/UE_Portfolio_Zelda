@@ -70,7 +70,7 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
+	//무기 ON/OFF 애님 노티파이를 만들고 그 때 무기를 붙일 소켓 변경
 	for (FAnimNotifyEventReference NotifyRef : GetMesh()->GetAnimInstance()->NotifyQueue.AnimNotifies)
 	{
 		if (NotifyRef.GetNotify()->NotifyName == TEXT("SwordOff"))
@@ -113,8 +113,10 @@ void AMainCharacter::Tick(float DeltaTime)
 
 	if (bBowZoom)
 	{ //활시위 당길때 등 카메라의 스프링 암 오프셋 이동
-		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength, 200.f, BowChargeTime * 30.f * DeltaTime);
-		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 40, 50), BowChargeTime * 30.f * DeltaTime);
+		float LerpFloat = BowChargeTime * 30.f * DeltaTime;
+		LerpFloat = LerpFloat > 1.f ? 1.f : LerpFloat;
+		SpringArmCom->TargetArmLength = FMath::Lerp(SpringArmCom->TargetArmLength, 200.f, LerpFloat);
+		SpringArmCom->SocketOffset = FMath::Lerp(SpringArmCom->SocketOffset, FVector(0, 40, 50), LerpFloat);
 
 		bUseControllerRotationRoll = false;
 		bUseControllerRotationPitch = true;
@@ -184,7 +186,8 @@ void AMainCharacter::Tick(float DeltaTime)
 	//State-Attack/Jump
 	switch (CurAniState)
 	{
-	case PLAYER_ANISTATE::JUMP:		
+	case PLAYER_ANISTATE::JUMP:
+		bBowZoom = false;
 		if (JumpCurrentCount == 0)
 		{
 			if (InputDir.IsZero())
@@ -593,9 +596,6 @@ void AMainCharacter::BowAttackEnd()
 				ArrowTrail->Activate();
 				ArrowActor->Tags.Add(TEXT("PlayerAttack"));
 				ArrowActor = nullptr;
-
-
-
 			}
 
 		}

@@ -22,5 +22,23 @@ void UGamePlayWidget::NativeConstruct()
 
 void UGamePlayWidget::ToggleInvenShow()
 {
-	InventoryVisible = (InventoryVisible == ESlateVisibility::Hidden) ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+	if (InventoryVisible == ESlateVisibility::Hidden)
+	{
+		InventoryVisible = ESlateVisibility::Visible;
+		GetWorld()->GetPlayerControllerIterator()->Get()->SetPause(true);
+		GetWorld()->GetPlayerControllerIterator()->Get()->bShowMouseCursor = true;
+		GetWorld()->GetPlayerControllerIterator()->Get()->SetInputMode(FInputModeUIOnly());
+	}
+	else
+	{
+		InventoryVisible = ESlateVisibility::Hidden;
+		GetWorld()->GetPlayerControllerIterator()->Get()->SetPause(false);
+		GetWorld()->GetPlayerControllerIterator()->Get()->bShowMouseCursor = false;
+		GetWorld()->GetPlayerControllerIterator()->Get()->SetInputMode(FInputModeGameOnly());
+	}
+}
+
+bool UGamePlayWidget::IsInvenShow()
+{
+	return (InventoryVisible == ESlateVisibility::Visible) ? true : false;
 }
