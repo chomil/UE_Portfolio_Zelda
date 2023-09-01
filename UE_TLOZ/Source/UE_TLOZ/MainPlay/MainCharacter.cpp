@@ -287,12 +287,21 @@ void AMainCharacter::MoveRight(float Val)
 {
 	InputDir.Y = Val;
 
+	bool AttackMove = false;
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
 	case PLAYER_ANISTATE::WALK:
 	case PLAYER_ANISTATE::RUN:
 	case PLAYER_ANISTATE::DASH:
+		break;
+
+
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::BOW_CHARGE:
+		AttackMove = true;
 		break;
 	default:
 		return;
@@ -301,37 +310,50 @@ void AMainCharacter::MoveRight(float Val)
 
 	if (Val != 0.f)
 	{
-		if (bIsDash == true)
+		if (AttackMove == false)
 		{
-			SetAniState(PLAYER_ANISTATE::DASH);
-		}
-		else
-		{
-			SetAniState(PLAYER_ANISTATE::RUN);
+			if (bIsDash == true)
+			{
+				SetAniState(PLAYER_ANISTATE::DASH);
+			}
+			else
+			{
+				SetAniState(PLAYER_ANISTATE::RUN);
+			}
 		}
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
+		FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		RightDirection.Normalize();
 		// add movement 
-		AddMovementInput(RightDirection, Val);
+		if (AttackMove == false)
+		{
+			AddMovementInput(RightDirection, Val);
+		}
+		else
+		{
+			AddMovementInput(RightDirection*0.1f, Val);
+		}
 	}
 	else
 	{
-		if (InputDir.IsZero())
+		if (AttackMove == false)
 		{
-			SetAniState(PLAYER_ANISTATE::IDLE);
+			if (InputDir.IsZero())
+			{
+				SetAniState(PLAYER_ANISTATE::IDLE);
+			}
 		}
 	}
 }
 
 void AMainCharacter::MoveForward(float Val)
 {
-	InputDir.X = Val; 
-
+	InputDir.X = Val;
+	bool AttackMove = false;
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
 	case PLAYER_ANISTATE::IDLE:
@@ -339,35 +361,56 @@ void AMainCharacter::MoveForward(float Val)
 	case PLAYER_ANISTATE::RUN:
 	case PLAYER_ANISTATE::DASH:
 		break;
+
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::BOW_CHARGE:
+		AttackMove = true;
+		break;
 	default:
 		return;
 	}
 
 	if (Val != 0.f)
 	{
-		if (bIsDash == true)
+		if (AttackMove == false)
 		{
-			SetAniState(PLAYER_ANISTATE::DASH);
+			if (bIsDash == true)
+			{
+				SetAniState(PLAYER_ANISTATE::DASH);
+			}
+			else
+			{
+				SetAniState(PLAYER_ANISTATE::RUN);
+			}
 		}
-		else
-		{
-			SetAniState(PLAYER_ANISTATE::RUN);
-		}
+		
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
+		FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		ForwardDirection.Normalize();
 		// add movement 
-		AddMovementInput(ForwardDirection, Val);
+		if (AttackMove == false)
+		{
+			AddMovementInput(ForwardDirection, Val);
+		}
+		else
+		{
+			AddMovementInput(ForwardDirection*0.1f, Val); 
+		}
 	}
 	else
 	{
-		if (InputDir.IsZero())
+		if (AttackMove == false)
 		{
-			SetAniState(PLAYER_ANISTATE::IDLE);
+			if (InputDir.IsZero())
+			{
+				SetAniState(PLAYER_ANISTATE::IDLE);
+			}
 		}
 	}
 }

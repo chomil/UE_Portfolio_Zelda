@@ -38,7 +38,7 @@ void AMovableActor::Tick(float DeltaTime)
 			if (Transform.Equals(TransformRecord.Last()) == false)
 			{
 				TransformRecord.EmplaceLast(Transform);
-				if (TransformRecord.Num() > MaxRecord)
+				if (TransformRecord.Num() > 600)
 				{
 					TransformRecord.PopFirst();
 				}
@@ -48,6 +48,9 @@ void AMovableActor::Tick(float DeltaTime)
 		{
 			TransformRecord.EmplaceLast(Transform);
 		}
+
+
+		MaxRecord = TransformRecord.Num();
 	}
 	else //Rewind
 	{
