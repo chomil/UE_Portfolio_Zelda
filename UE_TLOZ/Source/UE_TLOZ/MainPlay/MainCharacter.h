@@ -93,6 +93,13 @@ public:
 	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* ArrowMeshComponent;
 
+
+	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
+	class UNiagaraSystem* HitDefaultParticle;
+
+	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
+	class UNiagaraSystem* HitStrongParticle;
+
 protected:
 	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 

@@ -40,4 +40,12 @@ private:
 	bool bTimeRewind = false;
 
 	UStaticMeshComponent* Mesh = nullptr;
+
+	FVector DeltaPos;
+	float VelPerSec;
+
+	float MovableDeltaVel = 0.f;
+
+	UFUNCTION()
+	void HitActor(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 };

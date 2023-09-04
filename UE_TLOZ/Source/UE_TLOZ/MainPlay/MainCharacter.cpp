@@ -8,6 +8,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+
 #include "MainHUD.h"
 
 
@@ -59,6 +61,7 @@ void AMainCharacter::BeginPlay()
 
 	SpringArmCom = Cast<USpringArmComponent>(GetComponentByClass(USpringArmComponent::StaticClass()));
 
+	
 
 
 	HP = 10;
@@ -772,17 +775,24 @@ void AMainCharacter::BeginWeaponOverLap(
 	bool bFromSweep, 
 	const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag(TEXT("Monster")))
+
+	PLAYER_ANISTATE Ani = static_cast<PLAYER_ANISTATE>(GetAniState());
+	if (PLAYER_ANISTATE::ATTACK1 == Ani ||
+		PLAYER_ANISTATE::ATTACK2 == Ani ||
+		PLAYER_ANISTATE::ATTACK3 == Ani ||
+		PLAYER_ANISTATE::ATTACK4 == Ani ||
+		PLAYER_ANISTATE::ATTACK_DASH == Ani)
 	{
-		PLAYER_ANISTATE Ani = static_cast<PLAYER_ANISTATE>(GetAniState());
-		if (PLAYER_ANISTATE::ATTACK1 == Ani ||
-			PLAYER_ANISTATE::ATTACK2 == Ani ||
-			PLAYER_ANISTATE::ATTACK3 == Ani ||
-			PLAYER_ANISTATE::ATTACK4 == Ani ||
-			PLAYER_ANISTATE::ATTACK_DASH == Ani)
+		if (OtherActor->ActorHasTag(TEXT("Monster")))
 		{
 			AGlobalCharacter* Mon = Cast<AGlobalCharacter>(OtherActor);
-			Attacked(1.0f, Mon);
+			if (Mon->GetHP() > 0)
+			{
+				Attacked(1.0f, Mon);
+
+				FVector HitPoint = WeaponMeshComponent->GetSocketLocation(TEXT("HitSocket"));
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitDefaultParticle, HitPoint, FRotator::ZeroRotator);
+			}
 		}
 	}
 }

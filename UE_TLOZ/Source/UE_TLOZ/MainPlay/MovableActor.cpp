@@ -2,6 +2,7 @@
 
 
 #include "MainPlay/MovableActor.h"
+#include <Global/GlobalCharacter.h>
 
 // Sets default values
 AMovableActor::AMovableActor()
@@ -18,6 +19,8 @@ void AMovableActor::BeginPlay()
 	Super::BeginPlay();
 
 	Mesh = Cast<UStaticMeshComponent>(GetComponentByClass(UStaticMeshComponent::StaticClass()));
+	Mesh->OnComponentHit.AddDynamic(this,&AMovableActor::HitActor);
+	Mesh->SetNotifyRigidBodyCollision(true);
 }
 
 // Called every frame
@@ -31,6 +34,13 @@ void AMovableActor::Tick(float DeltaTime)
 	}
 
 	FTransform Transform = Mesh->GetRelativeTransform();
+
+	if (TransformRecord.IsEmpty() == false)
+	{
+		DeltaPos = (Transform.GetLocation() - TransformRecord.Last().GetLocation());
+		VelPerSec = DeltaPos.Size()/DeltaTime;
+	}
+
 	if (bTimeRewind == false) //Record Transform
 	{
 		if (TransformRecord.IsEmpty()==false)
@@ -66,7 +76,6 @@ void AMovableActor::Tick(float DeltaTime)
 		}
 	}
 
-
 	CurRecord = TransformRecord.Num();
 }
 
@@ -75,17 +84,34 @@ void AMovableActor::SetTimeRewind(bool _bTimeRewind)
 	bTimeRewind = _bTimeRewind;
 	if (Mesh != nullptr)
 	{
+		Mesh->ComponentVelocity = FVector::Zero();
 		if (_bTimeRewind == true)
 		{
 			Mesh->SetEnableGravity(false);
 			Mesh->SetSimulatePhysics(false);
-
 		}
 		else
 		{
 			Mesh->SetSimulatePhysics(true);
 			Mesh->SetEnableGravity(true);
-			Mesh->ComponentVelocity = FVector::Zero();
+		}
+	}
+}
+
+void AMovableActor::HitActor(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor->ActorHasTag(TEXT("Monster")))
+	{
+		if (VelPerSec > 500.f)
+		{
+			Cast<AGlobalCharacter>(OtherActor)->Damaged((int)VelPerSec / 100, nullptr);
+		}
+	}
+	else if (OtherActor->ActorHasTag(TEXT("Player")))
+	{
+		if (VelPerSec > 1000.f)
+		{
+			Cast<AGlobalCharacter>(OtherActor)->Damaged((int)VelPerSec / 1000, nullptr);
 		}
 	}
 }
