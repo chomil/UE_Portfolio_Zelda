@@ -16,6 +16,7 @@ struct UE_TLOZ_API FMonsterData : public FTableRowBase
 {
 	GENERATED_BODY()
 
+public:
 	FMonsterData() {}
 	~FMonsterData() {}
 

@@ -25,16 +25,16 @@ void UGamePlayWidget::ToggleInvenShow()
 	if (InventoryVisible == ESlateVisibility::Hidden)
 	{
 		InventoryVisible = ESlateVisibility::Visible;
-		GetWorld()->GetPlayerControllerIterator()->Get()->SetPause(true);
-		GetWorld()->GetPlayerControllerIterator()->Get()->bShowMouseCursor = true;
-		GetWorld()->GetPlayerControllerIterator()->Get()->SetInputMode(FInputModeUIOnly());
+		GetWorld()->GetFirstPlayerController()->SetPause(true);
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeUIOnly());
 	}
 	else
 	{
 		InventoryVisible = ESlateVisibility::Hidden;
-		GetWorld()->GetPlayerControllerIterator()->Get()->SetPause(false);
-		GetWorld()->GetPlayerControllerIterator()->Get()->bShowMouseCursor = false;
-		GetWorld()->GetPlayerControllerIterator()->Get()->SetInputMode(FInputModeGameOnly());
+		GetWorld()->GetFirstPlayerController()->SetPause(false);
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
 	}
 }
 

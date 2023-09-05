@@ -71,13 +71,13 @@ void UBTTask_CHASE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		OriginPos.Z = 0.0f;
 		FVector OriginDir = OriginPos - PawnPos;
 
-		//시작 위치로부터 멀어지면
-		if (OriginDir.Size() >= SearchRange * 2.f)
-		{
-			GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
-			SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
-			return;
-		}
+		////시작 위치로부터 멀어지면
+		//if (OriginDir.Size() >= SearchRange * 2.f)
+		//{
+		//	GetBlackboardComponent(OwnerComp)->SetValueAsObject(TEXT("TargetActor"), nullptr);
+		//	SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
+		//	return;
+		//}
 
 		//타깃과 멀어지면
 		if (SearchRange< Dir.Size())

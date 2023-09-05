@@ -58,3 +58,18 @@ enum class MONSTER_TYPE : uint8
 	MONSTER,
 	BOSS_HINOX
 };
+
+
+UENUM(BlueprintType)
+enum class ITEM_TYPE : uint8
+{
+	NONE,
+	SWORD,
+	BOW,
+	SHIELD,
+	ARMOR_HEAD,
+	ARMOR_UP,
+	ARMOR_DOWN,
+	FOOD,
+	ETC
+};
