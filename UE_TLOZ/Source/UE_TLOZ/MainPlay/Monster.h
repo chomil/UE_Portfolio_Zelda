@@ -18,10 +18,13 @@ class UE_TLOZ_API AMonster : public AAICharacter
 
 	AMonster();
 
-	const struct FMonsterData* CurMonsterData;
-
+protected:
 	void BeginPlay() override;
 
+	void Tick(float _DeltaTime) override;
+
+
+public:
 	UFUNCTION(BlueprintCallable)
 		void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 
@@ -35,9 +38,10 @@ class UE_TLOZ_API AMonster : public AAICharacter
 	UFUNCTION(BlueprintCallable)
 	void GetStone();
 
-	void Tick(float _DeltaTime) override;
 
 private:
+
+
 	UPROPERTY(Category = "Animation", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		FName DataName = "NONE";
 
@@ -45,10 +49,15 @@ private:
 	UPROPERTY(Category = "Child", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* WeaponComponent;
 
+	const struct FMonsterData* CurMonsterData;
+	
 	MONSTER_TYPE MonsterType;
 
 	UPROPERTY(Category = "Monster", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float DeathTime = 0;
+
+	UPROPERTY(Category = "Monster", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool bShowHP = false;
 
 	UFUNCTION()
 		void BeginWeaponOverLap(

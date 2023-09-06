@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NavMesh/RecastNavMesh.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "MainHUD.h"
 
 AMonster::AMonster()
 {
@@ -109,6 +110,43 @@ void AMonster::Tick(float _DeltaTime)
 	{
 		DeathTime += _DeltaTime;
 	}
+
+
+	float ShowHPRange = GetBlackboardComponent()->GetValueAsFloat(TEXT("SearchRange"))*0.8f;
+
+	AGlobalCharacter* Player = Cast<AGlobalCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if ((Player->GetActorLocation() - GetActorLocation()).Size() < ShowHPRange)
+	{
+		bShowHP = true;
+	}
+	else
+	{
+		bShowHP = false;
+	}
+
+	if (MonsterType == MONSTER_TYPE::BOSS_HINOX)
+	{
+		APlayerController* HUDController = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+		AMainHUD* HUD = HUDController->GetHUD<AMainHUD>();
+		if (HUD == nullptr || HUD->IsValidLowLevel() == false)
+		{
+			return;
+		}
+		//AGlobalCharacter* Player = Cast<AGlobalCharacter>(HUDController->GetPawn());
+		if ((Player->GetActorLocation() - GetActorLocation()).Size() < ShowHPRange)
+		{
+			HUD->GetMainWidget()->SetBossHPVisible(true, this);
+		}
+		else
+		{
+			HUD->GetMainWidget()->SetBossHPVisible(false);
+		}
+		if (GetHP() <= 0)
+		{
+			HUD->GetMainWidget()->SetBossHPVisible(false);
+		}
+	}
+
 }
 
 void AMonster::BeginWeaponOverLap(

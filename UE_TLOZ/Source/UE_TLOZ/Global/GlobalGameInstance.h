@@ -33,5 +33,9 @@ private:
 	UPROPERTY()
 		UDataTable* MonsterDatas;
 
+
+	UPROPERTY()
+	UDataTable* ItemDatas;
+
 	TArray<UStaticMesh*> Arrmesh;
 };

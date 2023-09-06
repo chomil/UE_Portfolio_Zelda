@@ -136,6 +136,11 @@ void UBTTask_AIBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	
 	if (Damaged(OwnerComp))
 	{
+		if (State == MONSTER_AISTATE::SLEEP_LOOP)
+		{
+			SetStateChange(OwnerComp, MONSTER_AISTATE::SLEEP_END);
+			return;
+		}
 		SetStateChange(OwnerComp, MONSTER_AISTATE::HIT);
 		return;
 	}
@@ -245,6 +250,11 @@ bool UBTTask_AIBase::Damaged(UBehaviorTreeComponent& OwnerComp)
 
 		MONSTER_AISTATE State = static_cast<MONSTER_AISTATE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("AIState")));
 		if (State == MONSTER_AISTATE::HIT || State == MONSTER_AISTATE::DEATH || 
+			State == MONSTER_AISTATE::STUN_START || State == MONSTER_AISTATE::STUN_LOOP || State == MONSTER_AISTATE::STUN_END)
+		{
+			return false;
+		}
+		if (State == MONSTER_AISTATE::HIT || State == MONSTER_AISTATE::DEATH ||
 			State == MONSTER_AISTATE::STUN_START || State == MONSTER_AISTATE::STUN_LOOP || State == MONSTER_AISTATE::STUN_END)
 		{
 			return false;

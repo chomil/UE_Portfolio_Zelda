@@ -15,6 +15,7 @@ public:
 	// Sets default values for this character's properties
 	AGlobalCharacter();
 
+	UFUNCTION(BlueprintCallable)
 	int GetAniState()
 	{
 		return AniState;
@@ -102,11 +103,7 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
-	//	float BaseTurnRate;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
-	//	float BaseLookUpRate;
 
 	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
 	float MaxHP = 1.f;
@@ -123,6 +120,7 @@ protected:
 	bool bIsStunning = false;
 
 private:
+
 	int AniState = 0;
 
 	TMap<int, class UAnimMontage*> AllAnimations;

@@ -22,23 +22,36 @@ void UGamePlayWidget::NativeConstruct()
 
 void UGamePlayWidget::ToggleInvenShow()
 {
-	if (InventoryVisible == ESlateVisibility::Hidden)
-	{
-		InventoryVisible = ESlateVisibility::Visible;
-		GetWorld()->GetFirstPlayerController()->SetPause(true);
-		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
-		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeUIOnly());
-	}
-	else
+	if (IsInvenShow() == true)
 	{
 		InventoryVisible = ESlateVisibility::Hidden;
 		GetWorld()->GetFirstPlayerController()->SetPause(false);
 		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
 		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
 	}
+	else
+	{
+		InventoryVisible = ESlateVisibility::Visible;
+		GetWorld()->GetFirstPlayerController()->SetPause(true);
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeUIOnly());
+	}
 }
 
 bool UGamePlayWidget::IsInvenShow()
 {
 	return (InventoryVisible == ESlateVisibility::Visible) ? true : false;
+}
+
+void UGamePlayWidget::SetBossHPVisible(bool bShow, AGlobalCharacter* _TargetBoss)
+{
+	if (bShow == true)
+	{
+		BossHPVisible = ESlateVisibility::Visible;
+		TargetBoss = _TargetBoss;
+	}
+	else
+	{
+		BossHPVisible = ESlateVisibility::Hidden;
+	}
 }

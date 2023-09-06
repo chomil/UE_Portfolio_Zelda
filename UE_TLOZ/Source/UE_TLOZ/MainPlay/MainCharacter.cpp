@@ -73,6 +73,11 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (PlayMode == nullptr)
+	{
+		return;
+	}
+
 	//무기 ON/OFF 애님 노티파이를 만들고 그 때 무기를 붙일 소켓 변경
 	for (FAnimNotifyEventReference NotifyRef : GetMesh()->GetAnimInstance()->NotifyQueue.AnimNotifies)
 	{
@@ -94,26 +99,19 @@ void AMainCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	//마우스 눌려있을시 연속해서 공격
 	float LeftButtonTime = GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(EKeys::LeftMouseButton);
 	if (LeftButtonTime > 0)
 	{
 		AttackAction();
-		//UE_LOG(LogTemp, Log, TEXT("%f Second"), LeftButtonTime);
 	}
 
 	float RightButtonTime = GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(EKeys::RightMouseButton);
 	if (RightButtonTime > 0)
 	{
 		BowAttackStart();
-		//UE_LOG(LogTemp, Log, TEXT("%f Second"), RightButtonTime);
 	}
 	
-
-	if (PlayMode == nullptr)
-	{
-		return;
-	}
-
 	if (bBowZoom)
 	{ //활시위 당길때 등 카메라의 스프링 암 오프셋 이동
 		float LerpFloat = BowChargeTime * 30.f * DeltaTime;
@@ -169,7 +167,8 @@ void AMainCharacter::Tick(float DeltaTime)
 	//State-Stamina
 	if (CurAniState == PLAYER_ANISTATE::DASH)
 	{
-		SP -= DeltaTime * 0.2f;
+		//대시 스태미나 10초에 걸쳐 소모
+		SP -= DeltaTime * 0.1f;
 		if (SP <= 0)
 		{
 			SP = 0;
@@ -178,6 +177,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 	else
 	{
+		//스태미나 2초에 걸쳐 회복
 		SP += DeltaTime * 0.5f;
 		if (SP >= MaxSP)
 		{
@@ -263,7 +263,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_RClick", EKeys::RightMouseButton));
 
 
-		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("InvenWindow", EKeys::I));
+		//UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("InvenWindow", EKeys::I));
 
 
 	}
@@ -280,7 +280,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Released, this, &AMainCharacter::BowAttackEnd);
 
 
-	PlayerInputComponent->BindAction("InvenWindow", EInputEvent::IE_Pressed, this, &AMainCharacter::InvenWindowOnOff);
+	//PlayerInputComponent->BindAction("InvenWindow", EInputEvent::IE_Pressed, this, &AMainCharacter::InvenWindowOnOff);
 
 
 }
@@ -749,13 +749,13 @@ void AMainCharacter::ChangeWeaponSocket(UMeshComponent* _WeaponMesh, FName _Sock
 
 void AMainCharacter::InvenWindowOnOff()
 {
-	APlayerController* HUDController = Cast<APlayerController>(GetController());
-	AMainHUD* HUD =  HUDController->GetHUD<AMainHUD>();
-	if (HUD == nullptr || HUD->IsValidLowLevel() == false)
-	{
-		return;
-	}
-	HUD->GetMainWidget()->ToggleInvenShow();
+	//APlayerController* HUDController = Cast<APlayerController>(GetController());
+	//AMainHUD* HUD =  HUDController->GetHUD<AMainHUD>();
+	//if (HUD == nullptr || HUD->IsValidLowLevel() == false)
+	//{
+	//	return;
+	//}
+	//HUD->GetMainWidget()->ToggleInvenShow();
 }
 
 void AMainCharacter::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter)

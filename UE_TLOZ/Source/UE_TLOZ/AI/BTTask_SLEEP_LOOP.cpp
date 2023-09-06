@@ -18,7 +18,7 @@ void UBTTask_SLEEP_LOOP::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(GetAiState(OwnerComp));
 	//float Time = Montage->CalculateSequenceLength();
 
-	if (5.f <= GetStateTime(OwnerComp))
+	if (60.f <= GetStateTime(OwnerComp))
 	{
 		SetStateChange(OwnerComp, MONSTER_AISTATE::SLEEP_END);
 		return;

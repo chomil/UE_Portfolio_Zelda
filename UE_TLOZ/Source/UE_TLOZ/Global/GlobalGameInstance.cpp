@@ -9,7 +9,6 @@ UGlobalGameInstance::UGlobalGameInstance()
 {
 
 	{
-
 		FString DataPath = TEXT("/Script/Engine.DataTable'/Game/BluePrints/Global/Data/DT_MonsterData.DT_MonsterData'");
 		ConstructorHelpers::FObjectFinder<UDataTable> DataTable(*DataPath);
 
@@ -17,7 +16,16 @@ UGlobalGameInstance::UGlobalGameInstance()
 		{
 			MonsterDatas = DataTable.Object;
 		}
+	}
 
+	{
+		FString DataPath = TEXT("/Script/Engine.DataTable'/Game/BluePrints/Global/Data/DT_ItemData.DT_ItemData'");
+		ConstructorHelpers::FObjectFinder<UDataTable> DataTable(*DataPath);
+
+		if (DataTable.Succeeded())
+		{
+			ItemDatas = DataTable.Object;
+		}
 	}
 
 	UGlobalStatic::MainRandom.GenerateNewSeed();

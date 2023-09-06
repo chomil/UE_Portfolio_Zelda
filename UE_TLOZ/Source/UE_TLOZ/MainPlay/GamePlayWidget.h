@@ -28,8 +28,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsInvenShow();
 
+	UFUNCTION(BlueprintCallable)
+	void SetBossHPVisible(bool bShow, AGlobalCharacter* _TargetBoss = nullptr);
+
+
 private:
 	UPROPERTY(Category = "Visible", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	ESlateVisibility InventoryVisible = ESlateVisibility::Hidden;
+
+
+	UPROPERTY(Category = "BossHPWidget", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	ESlateVisibility BossHPVisible = ESlateVisibility::Hidden;
+
+	UPROPERTY(Category = "BossHPWidget", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	AGlobalCharacter* TargetBoss = nullptr;
 	
 };

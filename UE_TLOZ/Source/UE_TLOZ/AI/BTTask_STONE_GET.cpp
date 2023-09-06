@@ -18,6 +18,7 @@ void UBTTask_STONE_GET::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	UAnimMontage* Montage = GetGlobalCharacter(OwnerComp)->GetAnimMontage(GetAiState(OwnerComp));
 	float Time = Montage->CalculateSequenceLength();
 
+
 	if (Time <= GetStateTime(OwnerComp))
 	{
 		SetStateChange(OwnerComp, MONSTER_AISTATE::STONE_THROW);
