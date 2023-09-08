@@ -3,6 +3,7 @@
 
 #include "GlobalGameInstance.h"
 #include <Global/Data/MonsterData.h>
+#include <Global/Data/ItemData.h>
 #include "GlobalStatic.h"
 
 UGlobalGameInstance::UGlobalGameInstance()
@@ -54,5 +55,21 @@ FMonsterData* UGlobalGameInstance::GetMonsterData(FName _Name)
 		return nullptr;
 	}
 
+	return FindTable;
+}
+
+FItemData* UGlobalGameInstance::GetItemData(FName _Name)
+{
+	if (nullptr == ItemDatas)
+	{
+		return nullptr;
+	}
+
+	FItemData* FindTable = ItemDatas->FindRow<FItemData>(_Name, _Name.ToString());
+
+	if (nullptr == FindTable)
+	{
+		return nullptr;
+	}
 	return FindTable;
 }

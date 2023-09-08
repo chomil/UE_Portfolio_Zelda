@@ -20,7 +20,7 @@ void UBTTask_SLEEP_END::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	if (Time <= GetStateTime(OwnerComp))
 	{
-		SetStateChange(OwnerComp, MONSTER_AISTATE::IDLE);
+		SetStateChange(OwnerComp, MONSTER_AISTATE::FIND);
 		return;
 	}
 }

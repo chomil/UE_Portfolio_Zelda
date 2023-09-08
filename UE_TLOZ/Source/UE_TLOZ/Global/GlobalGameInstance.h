@@ -23,6 +23,9 @@ public:
 
 	struct FMonsterData* GetMonsterData(FName _Name);
 
+
+	struct FItemData* GetItemData(FName _Name);
+
 private:
 	UPROPERTY()
 		UDataTable* TestTable;

@@ -60,19 +60,19 @@ void UBTTask_RETURN::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 		if (Angle < 90.f)
 		{
-			//서칭거리 30%내 +-90도 이내에 존재하면
-			if (Distance  < Range * 0.3f)
+			//서칭거리 50%내 +-90도 이내에 존재하면
+			if (Distance  < Range * 0.5f)
 			{
-				SetStateChange(OwnerComp, MONSTER_AISTATE::CHASE);
+				SetStateChange(OwnerComp, MONSTER_AISTATE::FIND);
 				return;
 			}
 		}
 		else
 		{
-			//각도 안에 안들어와도 서칭거리 10%로 가까워지면
-			if (Distance < Range * 0.1f)
+			//각도 안에 안들어와도 서칭거리 20%로 가까워지면
+			if (Distance < Range * 0.2f)
 			{
-				SetStateChange(OwnerComp, MONSTER_AISTATE::CHASE);
+				SetStateChange(OwnerComp, MONSTER_AISTATE::FIND);
 				return;
 			}
 		}

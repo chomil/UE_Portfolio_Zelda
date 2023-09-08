@@ -14,6 +14,12 @@ void UBTTask_FIND::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
+	if (GetBlackboardComponent(OwnerComp)->GetValueAsObject(TEXT("TargetActor")) == nullptr)
+	{
+		SetStateChange(OwnerComp, MONSTER_AISTATE::RETURN);
+		return;
+	}
+
 
 	LookTarget(OwnerComp, DeltaSeconds*2);
 

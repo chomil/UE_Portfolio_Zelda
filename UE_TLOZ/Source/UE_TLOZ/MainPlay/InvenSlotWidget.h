@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item.h"
+#include "InvenItem.h"
 #include "Blueprint/UserWidget.h"
 #include "InvenSlotWidget.generated.h"
 
@@ -15,18 +15,35 @@ class UE_TLOZ_API UInvenSlotWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+
 public:
+	void AddItem(UInvenItem* _Item);
+
+public:
+	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	UInvenItem* Item = nullptr;
+	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	int ItemCnt = 0;
+
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
 	int ListIndex = 0;
 
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	UItem* Item = nullptr;
-
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	bool bShowItem = true;
+	bool bShowItem = false;
 
 
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	int ItemCnt = 0;
+	bool bShowSlot = true;
+
+	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	bool bIsItem = false;
+
+	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	bool bIsEquip = false;
+
+	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	bool bIsSelect = false;
+
+
 	
 };

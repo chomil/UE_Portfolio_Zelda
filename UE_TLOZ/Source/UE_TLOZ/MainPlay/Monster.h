@@ -23,6 +23,8 @@ protected:
 
 	void Tick(float _DeltaTime) override;
 
+	void Destroyed() override;
+
 
 public:
 	UFUNCTION(BlueprintCallable)

@@ -25,7 +25,7 @@ public:
 	FName ItemName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	ITEM_TYPE ItemType;
+	ITEM_TYPE ItemType = ITEM_TYPE::NONE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	UTexture* SlotIcon;

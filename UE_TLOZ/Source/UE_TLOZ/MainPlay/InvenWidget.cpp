@@ -3,16 +3,32 @@
 
 #include "MainPlay/InvenWidget.h"
 #include "Components/TileView.h"
-#include "Item.h"
+#include "InvenItem.h"
+
+void UInvenWidget::AddInvenItem(FName ItemName)
+{
+	if (InvenList == nullptr)
+	{
+		return;
+	}
+
+	UInvenItem* NewItem = NewObject<UInvenItem>();
+	//NewItem->SetItemData(TEXT("Apple"));
+	InvenList->AddItem(NewItem);
+}
 
 void UInvenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	InvenList = Cast<UTileView>(GetWidgetFromName(TEXT("InvenView")));
 
-	UItem* NewItem = NewObject<UItem>();
+	InvenCnt = 6;
 
-	InvenList->AddItem(NewItem);
+	InvenList = Cast<UTileView>(GetWidgetFromName(TEXT("InvenTileView")));
+
+	for (int i = 0; i < InvenCnt; i++)
+	{
+		AddInvenItem();
+	}
 
 }
 

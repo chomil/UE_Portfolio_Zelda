@@ -67,8 +67,8 @@ void UBTTask_IDLE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 		}
 		else
 		{
-			//각도 안에 안들어와도 서칭거리 10%로 가까워지면
-			if (Dist.Size() < Range * 0.1f)
+			//각도 안에 안들어와도 서칭거리 20%로 가까워지면
+			if (Dist.Size() < Range * 0.2f)
 			{
 				SetStateChange(OwnerComp, MONSTER_AISTATE::FIND);
 				return;

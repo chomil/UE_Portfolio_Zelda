@@ -34,7 +34,7 @@ void UGamePlayWidget::ToggleInvenShow()
 		InventoryVisible = ESlateVisibility::Visible;
 		GetWorld()->GetFirstPlayerController()->SetPause(true);
 		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
-		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeUIOnly());
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameAndUI());
 	}
 }
 

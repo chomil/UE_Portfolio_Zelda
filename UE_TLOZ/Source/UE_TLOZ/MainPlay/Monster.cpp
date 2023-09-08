@@ -112,7 +112,7 @@ void AMonster::Tick(float _DeltaTime)
 	}
 
 
-	float ShowHPRange = GetBlackboardComponent()->GetValueAsFloat(TEXT("SearchRange"))*0.8f;
+	float ShowHPRange = GetBlackboardComponent()->GetValueAsFloat(TEXT("SearchRange"));
 
 	AGlobalCharacter* Player = Cast<AGlobalCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if ((Player->GetActorLocation() - GetActorLocation()).Size() < ShowHPRange)
@@ -121,7 +121,16 @@ void AMonster::Tick(float _DeltaTime)
 	}
 	else
 	{
-		bShowHP = false;
+		switch (static_cast<MONSTER_AISTATE>(GetAniState()))
+		{
+		case MONSTER_AISTATE::HIT:
+		case MONSTER_AISTATE::DEATH:
+			bShowHP = true;
+			break;
+		default:
+			bShowHP = false;
+			break;
+		}
 	}
 
 	if (MonsterType == MONSTER_TYPE::BOSS_HINOX)
@@ -132,8 +141,7 @@ void AMonster::Tick(float _DeltaTime)
 		{
 			return;
 		}
-		//AGlobalCharacter* Player = Cast<AGlobalCharacter>(HUDController->GetPawn());
-		if ((Player->GetActorLocation() - GetActorLocation()).Size() < ShowHPRange)
+		if (bShowHP == true)
 		{
 			HUD->GetMainWidget()->SetBossHPVisible(true, this);
 		}
@@ -141,12 +149,23 @@ void AMonster::Tick(float _DeltaTime)
 		{
 			HUD->GetMainWidget()->SetBossHPVisible(false);
 		}
-		if (GetHP() <= 0)
-		{
-			HUD->GetMainWidget()->SetBossHPVisible(false);
-		}
 	}
 
+}
+
+void AMonster::Destroyed()
+{
+	Super::Destroyed();
+	if (MonsterType == MONSTER_TYPE::BOSS_HINOX)
+	{
+		APlayerController* HUDController = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+		AMainHUD* HUD = HUDController->GetHUD<AMainHUD>();
+		if (HUD == nullptr || HUD->IsValidLowLevel() == false)
+		{
+			return;
+		}
+		HUD->GetMainWidget()->SetBossHPVisible(false);
+	}
 }
 
 void AMonster::BeginWeaponOverLap(
