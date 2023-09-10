@@ -4,6 +4,9 @@
 #include "MainPlay/InvenWidget.h"
 #include "Components/TileView.h"
 #include "InvenItem.h"
+#include <Global/GlobalGameInstance.h>
+#include "Inventory.h"
+#include "InvenSlotWidget.h"
 
 void UInvenWidget::AddInvenItem(FName ItemName)
 {
@@ -11,27 +14,45 @@ void UInvenWidget::AddInvenItem(FName ItemName)
 	{
 		return;
 	}
+	int InvenNum = InvenList->GetNumItems();
 
-	UInvenItem* NewItem = NewObject<UInvenItem>();
-	//NewItem->SetItemData(TEXT("Apple"));
-	InvenList->AddItem(NewItem);
+	for (int i = 0; i < InvenNum; i++)
+	{
+		UInvenItem* InvenItem = Cast<UInvenItem>(InvenList->GetItemAt(i));
+
+		if (InvenItem->ItemData == nullptr)
+		{
+			InvenItem->SetItemData(ItemName);
+			return;
+		}
+	}
+
+}
+
+void UInvenWidget::Refresh()
+{
+	InvenList->ClearListItems();
+
+	UGlobalGameInstance* Inst = GetWorld()->GetGameInstance<UGlobalGameInstance>();
+
+	const TArray<UInvenItem*>& InvenItems = Inst->GetInventory()->GetItems();
+
+	for (UInvenItem* Item : InvenItems)
+	{
+		InvenList->AddItem(Item);
+	}
 }
 
 void UInvenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	InvenCnt = 6;
-
 	InvenList = Cast<UTileView>(GetWidgetFromName(TEXT("InvenTileView")));
 
-	for (int i = 0; i < InvenCnt; i++)
-	{
-		AddInvenItem();
-	}
-
+	Refresh();
 }
 
 void UInvenWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
+	//Refresh();
 }

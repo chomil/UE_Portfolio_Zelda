@@ -17,6 +17,8 @@ class UE_TLOZ_API UInvenWidget : public UUserWidget
 public:
 	UFUNCTION(BlueprintCallable)
 	void AddInvenItem(FName ItemName = "None");
+
+	void Refresh();
 protected:
 	void NativeConstruct() override;
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -25,5 +27,4 @@ private:
 	UPROPERTY(Category = "InvenList", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UListView* InvenList = nullptr;
 
-	int InvenCnt = 0;
 };

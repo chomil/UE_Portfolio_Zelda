@@ -3,8 +3,17 @@
 
 #include "MainPlay/InvenItem.h"
 #include <Global/GlobalGameInstance.h>
+#include "InvenSlotWidget.h"
 
-void UInvenItem::SetItemData(FName ItemName)
+UInvenItem::UInvenItem()
+{
+}
+
+UInvenItem::~UInvenItem()
+{
+}
+
+void UInvenItem::SetItemData(FName _ItemName)
 {
 	if (GetWorld() == nullptr)
 	{
@@ -14,6 +23,12 @@ void UInvenItem::SetItemData(FName ItemName)
 
 	if (nullptr != Inst)
 	{
-		ItemData = Inst->GetItemData(ItemName);
+		ItemData = Inst->GetItemData(_ItemName);
 	}
 }
+
+void UInvenItem::SetItemData(FItemData* _ItemData)
+{
+	ItemData = _ItemData;
+}
+

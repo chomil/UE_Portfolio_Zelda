@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Engine/DataTable.h"
+#include <MainPlay/Inventory.h>
 #include "GlobalGameInstance.generated.h"
 
 /**
@@ -19,19 +20,19 @@ public:
 	UGlobalGameInstance();
 	~UGlobalGameInstance();
 
-	UStaticMesh* GetMesh(FName _Name);
+	void Init()override;
 
 	struct FMonsterData* GetMonsterData(FName _Name);
 
 
 	struct FItemData* GetItemData(FName _Name);
 
-private:
-	UPROPERTY()
-		UDataTable* TestTable;
+	UInventory* GetInventory()
+	{
+		return Inventory;
+	};
 
-	UPROPERTY()
-		UDataTable* MeshDatas;
+private:
 
 	UPROPERTY()
 		UDataTable* MonsterDatas;
@@ -40,5 +41,7 @@ private:
 	UPROPERTY()
 	UDataTable* ItemDatas;
 
-	TArray<UStaticMesh*> Arrmesh;
+	UPROPERTY()
+	UInventory* Inventory;
+
 };

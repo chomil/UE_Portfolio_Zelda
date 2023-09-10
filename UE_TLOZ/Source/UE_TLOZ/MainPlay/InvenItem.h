@@ -7,21 +7,22 @@
 #include <Global/Data/ItemData.h>
 #include "InvenItem.generated.h"
 
-/**
- * 
- */
+
+
 UCLASS()
 class UE_TLOZ_API UInvenItem : public UObject
 {
 	GENERATED_BODY()
 
-
 public:
-	UFUNCTION(BlueprintCallable)
-	void SetItemData(FName ItemName);
+	UInvenItem();
+	~UInvenItem();
+
+	void SetItemData(FName _ItemName);
+	void SetItemData(FItemData* _ItemData);
 
 	UFUNCTION(BlueprintCallable)
-	FItemData GetItemData()
+	FItemData GetInvenItemData()
 	{
 		return *ItemData;
 	}

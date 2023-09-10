@@ -17,20 +17,26 @@ class UE_TLOZ_API UInvenSlotWidget : public UUserWidget
 
 
 public:
-	void AddItem(UInvenItem* _Item);
+	UFUNCTION(BlueprintCallable)
+	void AddInvenItem(UObject* _Item);
+
+
+	void Refresh();
 
 public:
+
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	UInvenItem* Item = nullptr;
+	int ListIndex = 0;
+	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	UInvenItem* InvenItem = nullptr;
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
 	int ItemCnt = 0;
 
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	int ListIndex = 0;
+	UTexture* ItemTexture = nullptr;
 
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
 	bool bShowItem = false;
-
 
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
 	bool bShowSlot = true;
@@ -43,7 +49,4 @@ public:
 
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
 	bool bIsSelect = false;
-
-
-	
 };

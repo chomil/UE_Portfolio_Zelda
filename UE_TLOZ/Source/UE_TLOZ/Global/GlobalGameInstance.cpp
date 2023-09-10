@@ -29,6 +29,7 @@ UGlobalGameInstance::UGlobalGameInstance()
 		}
 	}
 
+
 	UGlobalStatic::MainRandom.GenerateNewSeed();
 }
 
@@ -36,9 +37,14 @@ UGlobalGameInstance::~UGlobalGameInstance()
 {
 }
 
-UStaticMesh* UGlobalGameInstance::GetMesh(FName _Name)
+void UGlobalGameInstance::Init()
 {
-	return nullptr;
+	Super::Init();
+	if (GetWorld() == nullptr)
+	{
+		return;
+	}
+	Inventory = NewObject<UInventory>(GetWorld());
 }
 
 FMonsterData* UGlobalGameInstance::GetMonsterData(FName _Name)
