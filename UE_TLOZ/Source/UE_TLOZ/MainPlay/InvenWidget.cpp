@@ -8,38 +8,23 @@
 #include "Inventory.h"
 #include "InvenSlotWidget.h"
 
-void UInvenWidget::AddInvenItem(FName ItemName)
-{
-	if (InvenList == nullptr)
-	{
-		return;
-	}
-	int InvenNum = InvenList->GetNumItems();
-
-	for (int i = 0; i < InvenNum; i++)
-	{
-		UInvenItem* InvenItem = Cast<UInvenItem>(InvenList->GetItemAt(i));
-
-		if (InvenItem->ItemData == nullptr)
-		{
-			InvenItem->SetItemData(ItemName);
-			return;
-		}
-	}
-
-}
 
 void UInvenWidget::Refresh()
 {
 	InvenList->ClearListItems();
-
 	UGlobalGameInstance* Inst = GetWorld()->GetGameInstance<UGlobalGameInstance>();
+
+	Inst->GetInventory()->RefreshInven();
 
 	const TArray<UInvenItem*>& InvenItems = Inst->GetInventory()->GetItems();
 
 	for (UInvenItem* Item : InvenItems)
 	{
 		InvenList->AddItem(Item);
+		if (Item->GetWidget() != nullptr)
+		{
+			Item->GetWidget()->Refresh();
+		}
 	}
 }
 

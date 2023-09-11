@@ -20,38 +20,47 @@ public:
 	AMainCharacter();
 
 protected:
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+private:
+	//Input
+		//Setting up inputs. Mapping context and Input Action variables, to be set in Blueprint
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* InputMapping;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InputActionMove;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InputActionMouseMove;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InputActionJump;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InputActionDash;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InputActionSword;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InputActionBow;
 
 public:	
-	void MoveRight(float Val);
 
-	void MoveForward(float Val);
-
-	void Dash(float Val);
-
-	void PlayerJump();
-
-	void AttackAction();
-	void BowAttackStart();
-	void BowAttackEnd();
-
-
+	void Move(const struct FInputActionValue& Instance);
+	void Look(const struct FInputActionValue& Instance);
+	void PlayerJump(const struct FInputActionValue& Instance);
+	void Dash(const struct FInputActionValue& Instance);
+	void SwordAttack(const struct FInputActionValue& Instance);
+	void BowAttack(const struct FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintCallable)
 		float GetRightHandBlending();
 
-
 	UFUNCTION(BlueprintCallable)
 		float GetBowHandBlending();
-
-
 
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Anim, bool _Inter);
@@ -99,11 +108,9 @@ public:
 protected:
 	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 
+
 private:
 	class AGamePlayMode* PlayMode = nullptr;
-	bool bPressingL = false;
-	bool bPressingR = false;
-
 	AActor* ArrowActor = nullptr;
 
 

@@ -3,6 +3,7 @@
 
 #include "MainPlay/Inventory.h"
 #include <Global/GlobalGameInstance.h>
+#include "InvenSlotWidget.h"
 
 UInventory::UInventory()
 {
@@ -11,7 +12,7 @@ UInventory::UInventory()
 		return;
 	}
 
-	MaxSlotNum = 24;
+	MaxSlotNum = 4;
 
 	for (int i = 0; i < MaxSlotNum; i++)
 	{
@@ -23,6 +24,7 @@ UInventory::UInventory()
 	AddItem(TEXT("Apple"), 2);
 	AddItem(TEXT("Herb"), 3);
 	AddItem(TEXT("Apple"), 3);
+	AddItem(TEXT("BokoHorn"), 2);
 }
 
 UInventory::~UInventory()
@@ -31,16 +33,16 @@ UInventory::~UInventory()
 
 void UInventory::AddItem(FName ItemName, int Num)
 {
-	FItemData* ItemData = GetWorld()->GetGameInstance<UGlobalGameInstance>()->GetItemData(ItemName);
+	const FItemData* ItemData = GetWorld()->GetGameInstance<UGlobalGameInstance>()->GetItemData(ItemName);
 	int GetIndex = -1;
 	for (int i = 0; i < InvenItems.Num(); i++)
 	{
-		if (ItemData == InvenItems[i]->ItemData)
+		if (ItemData == InvenItems[i]->GetItemData())
 		{
 			GetIndex = i;
 			break;
 		}
-		if (GetIndex == -1 && InvenItems[i]->ItemData == nullptr)
+		if (GetIndex == -1 && InvenItems[i]->GetItemData() == nullptr)
 		{
 			GetIndex = i;
 		}
@@ -48,8 +50,33 @@ void UInventory::AddItem(FName ItemName, int Num)
 
 	if (InvenItems.IsValidIndex(GetIndex))
 	{
-		InvenItems[GetIndex]->ItemData = ItemData;
-		InvenItems[GetIndex]->ItemCnt += Num;
+		InvenItems[GetIndex]->SetItemData(ItemData);
+		InvenItems[GetIndex]->AddItemCnt(Num);
+	}
+}
+
+void UInventory::RefreshInven()
+{
+	TArray<UInvenItem*> NewInvenItems;
+	for (int i = 0; i < InvenItems.Num(); i++)
+	{
+		if (InvenItems[i]->GetItemData() != nullptr && InvenItems[i]->GetItemCnt() > 0)
+		{
+			NewInvenItems.Add(InvenItems[i]);
+		}
+	}
+
+	for (int i = 0; i < MaxSlotNum; i++)
+	{
+		if (NewInvenItems.IsValidIndex(i))
+		{
+			InvenItems[i]->SetItemData(NewInvenItems[i]->GetItemData());
+			InvenItems[i]->SetItemCnt(NewInvenItems[i]->GetItemCnt());
+		}
+		else
+		{
+			InvenItems[i]->SetItemData(nullptr);
+		}
 	}
 }
 

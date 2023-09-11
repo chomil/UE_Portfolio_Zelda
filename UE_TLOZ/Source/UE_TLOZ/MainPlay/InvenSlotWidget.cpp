@@ -13,10 +13,10 @@ void UInvenSlotWidget::AddInvenItem(UObject* _InvenItem)
 	}
 
 
-	if (NewInvenItem->ItemData == nullptr) //빈칸으로 만들때
+	if (NewInvenItem->GetItemData() == nullptr) //빈칸으로 만들때
 	{
 		InvenItem = NewInvenItem;
-		InvenItem->Widget = this;
+		InvenItem->SetWidget(this);
 		ItemTexture = nullptr;
 		ItemCnt = 0;
 		bShowItem = false;
@@ -30,9 +30,9 @@ void UInvenSlotWidget::AddInvenItem(UObject* _InvenItem)
 	if (InvenItem == nullptr) //빈 슬롯에 추가될 때
 	{
 		InvenItem = NewInvenItem;
-		InvenItem->Widget = this;
-		ItemTexture = InvenItem->ItemData->SlotIcon;
-		ItemCnt = NewInvenItem->ItemCnt;
+		InvenItem->SetWidget(this);
+		ItemTexture = InvenItem->GetItemData()->SlotIcon;
+		ItemCnt = NewInvenItem->GetItemCnt();
 		bShowItem = true;
 		bShowSlot = true;
 		bIsItem = true;
@@ -53,9 +53,9 @@ void UInvenSlotWidget::Refresh() //인벤토리창 켜져있을때 리프레시 필요할때
 	{
 		return;
 	}
-	if (InvenItem->ItemData == nullptr) //빈칸일때 업데이트
+	if (InvenItem->GetItemData() == nullptr) //빈칸일때 업데이트
 	{
-		InvenItem->Widget = this;
+		InvenItem->SetWidget(this);
 		ItemTexture = nullptr;
 		ItemCnt = 0;
 		bShowItem = false;
@@ -67,9 +67,9 @@ void UInvenSlotWidget::Refresh() //인벤토리창 켜져있을때 리프레시 필요할때
 	}
 	else
 	{
-		InvenItem->Widget = this;
-		ItemTexture = InvenItem->ItemData->SlotIcon;
-		ItemCnt = InvenItem->ItemCnt;
+		InvenItem->SetWidget(this);
+		ItemTexture = InvenItem->GetItemData()->SlotIcon;
+		ItemCnt = InvenItem->GetItemCnt();
 		bShowItem = true;
 		bShowSlot = true;
 		bIsItem = true;

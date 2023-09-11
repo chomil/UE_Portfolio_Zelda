@@ -9,7 +9,11 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-
+#include "InputMappingContext.h"
+#include "InputAction.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "InputActionValue.h"
 #include "MainHUD.h"
 
 
@@ -29,11 +33,34 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 	
-	GetCharacterMovement()->MaxWalkSpeed = 300.f;
+	GetCharacterMovement()->MaxWalkSpeed = 400.f;
 
 	Tags.Add(TEXT("Player"));
 
 }
+
+// Called to bind functionality to input
+void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	APlayerController* PlayerCon = Cast<APlayerController>(GetController());
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerCon->GetLocalPlayer());
+	Subsystem->AddMappingContext(InputMapping, 0);
+
+	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	Input->BindAction(InputActionMove, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
+	Input->BindAction(InputActionMove, ETriggerEvent::Completed, this, &AMainCharacter::Move);
+	Input->BindAction(InputActionBow, ETriggerEvent::Triggered, this, &AMainCharacter::BowAttack);
+	Input->BindAction(InputActionBow, ETriggerEvent::Completed, this, &AMainCharacter::BowAttack);
+	Input->BindAction(InputActionSword, ETriggerEvent::Triggered, this, &AMainCharacter::SwordAttack);
+	Input->BindAction(InputActionJump, ETriggerEvent::Triggered, this, &AMainCharacter::PlayerJump);
+	Input->BindAction(InputActionDash, ETriggerEvent::Triggered, this, &AMainCharacter::Dash);
+	Input->BindAction(InputActionDash, ETriggerEvent::Completed, this, &AMainCharacter::Dash);
+	Input->BindAction(InputActionMouseMove, ETriggerEvent::Triggered, this, &AMainCharacter::Look);
+
+}
+
 
 // Called when the game starts or when spawned
 void AMainCharacter::BeginPlay()
@@ -99,18 +126,6 @@ void AMainCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	//마우스 눌려있을시 연속해서 공격
-	float LeftButtonTime = GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(EKeys::LeftMouseButton);
-	if (LeftButtonTime > 0)
-	{
-		AttackAction();
-	}
-
-	float RightButtonTime = GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(EKeys::RightMouseButton);
-	if (RightButtonTime > 0)
-	{
-		BowAttackStart();
-	}
 	
 	if (bBowZoom)
 	{ //활시위 당길때 등 카메라의 스프링 암 오프셋 이동
@@ -167,8 +182,8 @@ void AMainCharacter::Tick(float DeltaTime)
 	//State-Stamina
 	if (CurAniState == PLAYER_ANISTATE::DASH)
 	{
-		//대시 스태미나 10초에 걸쳐 소모
-		SP -= DeltaTime * 0.1f;
+		//대시 스태미나 5초에 걸쳐 소모
+		SP -= DeltaTime * 0.2f;
 		if (SP <= 0)
 		{
 			SP = 0;
@@ -233,190 +248,14 @@ void AMainCharacter::Tick(float DeltaTime)
 
 }
 
-// Called to bind functionality to input
-void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 
-	static bool bBindingsAdded = false;
-	if (!bBindingsAdded)
-	{
-		bBindingsAdded = true;
-
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_MoveForward", EKeys::W, 1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_MoveForward", EKeys::S, -1.f));
-
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_MoveRight", EKeys::A, -1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_MoveRight", EKeys::D, 1.f));
-
-
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_Dash", EKeys::LeftShift, 1.f));
-
-
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_Turn", EKeys::MouseX, 0.5f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("Player_LookUp", EKeys::MouseY, -0.5f));
-
-
-		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_Jump", EKeys::SpaceBar));
-		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_LClick", EKeys::LeftMouseButton));
-		UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping("Player_RClick", EKeys::RightMouseButton));
-
-	}
-
-	PlayerInputComponent->BindAxis("Player_MoveForward", this, &AMainCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("Player_MoveRight", this, &AMainCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Player_Turn", this, &AMainCharacter::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("Player_LookUp", this, &AMainCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Player_Dash", this, &AMainCharacter::Dash);
-
-	PlayerInputComponent->BindAction("Player_Jump", EInputEvent::IE_Pressed, this, &AMainCharacter::PlayerJump);
-	PlayerInputComponent->BindAction("Player_LClick", EInputEvent::IE_Pressed, this, &AMainCharacter::AttackAction);
-	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Repeat, this, &AMainCharacter::BowAttackStart);
-	PlayerInputComponent->BindAction("Player_RClick", EInputEvent::IE_Released, this, &AMainCharacter::BowAttackEnd);
-
-
-}
-
-
-void AMainCharacter::MoveRight(float Val)
-{
-	InputDir.Y = Val;
-
-	bool AttackMove = false;
-	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
-	{
-	case PLAYER_ANISTATE::IDLE:
-	case PLAYER_ANISTATE::WALK:
-	case PLAYER_ANISTATE::RUN:
-	case PLAYER_ANISTATE::DASH:
-		break;
-
-
-	case PLAYER_ANISTATE::ATTACK1:
-	case PLAYER_ANISTATE::ATTACK2:
-	case PLAYER_ANISTATE::ATTACK3:
-	case PLAYER_ANISTATE::BOW_CHARGE:
-		AttackMove = true;
-		break;
-	default:
-		return;
-	}
-
-
-	if (Val != 0.f)
-	{
-		if (AttackMove == false)
-		{
-			if (bIsDash == true)
-			{
-				SetAniState(PLAYER_ANISTATE::DASH);
-			}
-			else
-			{
-				SetAniState(PLAYER_ANISTATE::RUN);
-			}
-		}
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get right vector 
-		FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		RightDirection.Normalize();
-		// add movement 
-		if (AttackMove == false)
-		{
-			AddMovementInput(RightDirection, Val);
-		}
-		else
-		{
-			AddMovementInput(RightDirection*0.1f, Val);
-		}
-	}
-	else
-	{
-		if (AttackMove == false)
-		{
-			if (InputDir.IsZero())
-			{
-				SetAniState(PLAYER_ANISTATE::IDLE);
-			}
-		}
-	}
-}
-
-void AMainCharacter::MoveForward(float Val)
-{
-	InputDir.X = Val;
-	bool AttackMove = false;
-	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
-	{
-	case PLAYER_ANISTATE::IDLE:
-	case PLAYER_ANISTATE::WALK:
-	case PLAYER_ANISTATE::RUN:
-	case PLAYER_ANISTATE::DASH:
-		break;
-
-	case PLAYER_ANISTATE::ATTACK1:
-	case PLAYER_ANISTATE::ATTACK2:
-	case PLAYER_ANISTATE::ATTACK3:
-	case PLAYER_ANISTATE::BOW_CHARGE:
-		AttackMove = true;
-		break;
-	default:
-		return;
-	}
-
-	if (Val != 0.f)
-	{
-		if (AttackMove == false)
-		{
-			if (bIsDash == true)
-			{
-				SetAniState(PLAYER_ANISTATE::DASH);
-			}
-			else
-			{
-				SetAniState(PLAYER_ANISTATE::RUN);
-			}
-		}
-		
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		ForwardDirection.Normalize();
-		// add movement 
-		if (AttackMove == false)
-		{
-			AddMovementInput(ForwardDirection, Val);
-		}
-		else
-		{
-			AddMovementInput(ForwardDirection*0.1f, Val); 
-		}
-	}
-	else
-	{
-		if (AttackMove == false)
-		{
-			if (InputDir.IsZero())
-			{
-				SetAniState(PLAYER_ANISTATE::IDLE);
-			}
-		}
-	}
-}
-
-void AMainCharacter::Dash(float Val)
+void AMainCharacter::Dash(const FInputActionValue& Instance)
 {
 	if (bTired)
 	{
 		bIsDash = false;
-		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		GetCharacterMovement()->MaxWalkSpeed = 400.f;
 		return;
 	}
 	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
@@ -429,26 +268,19 @@ void AMainCharacter::Dash(float Val)
 	default:
 		return;
 	}
-	if (Val == 1.f)
+	bIsDash = Instance.Get<bool>();
+	if (bIsDash == true)
 	{
-		if (bIsDash == false)
-		{
-			bIsDash = true;
-			GetCharacterMovement()->MaxWalkSpeed = 550.f;
-		}
+		GetCharacterMovement()->MaxWalkSpeed = 700.f;
 	}
 	else
 	{
-		if (bIsDash == true)
-		{
-			bIsDash = false;
-			GetCharacterMovement()->MaxWalkSpeed = 300.f;
-		}
+		GetCharacterMovement()->MaxWalkSpeed = 400.f;
 	}
 }
 
 
-void AMainCharacter::PlayerJump()
+void AMainCharacter::PlayerJump(const FInputActionValue& Instance)
 {
 	if (GetAniState() == (int)PLAYER_ANISTATE::JUMP || GetAniState() == (int)PLAYER_ANISTATE::LAND)
 	{
@@ -459,7 +291,93 @@ void AMainCharacter::PlayerJump()
 	Jump();
 }
 
-void AMainCharacter::AttackAction()
+
+void AMainCharacter::Move(const FInputActionValue& Instance)
+{
+	FVector2D MoveVec = Instance.Get<FVector2D>();
+
+
+	InputDir.X = MoveVec.X;
+	InputDir.Y = MoveVec.Y;
+	bool AttackMove = false;
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+	{
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
+		break;
+
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::BOW_CHARGE:
+		AttackMove = true;
+		break;
+	default:
+		return;
+	}
+
+	if (MoveVec != FVector2D::ZeroVector)
+	{
+		if (AttackMove == false)
+		{
+			if (bIsDash == true)
+			{
+				SetAniState(PLAYER_ANISTATE::DASH);
+			}
+			else
+			{
+				SetAniState(PLAYER_ANISTATE::RUN);
+			}
+		}
+
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		ForwardDirection.Normalize();
+		ForwardDirection *= MoveVec.X;
+
+		// get right vector 
+		FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		RightDirection.Normalize();
+		RightDirection *= MoveVec.Y;
+
+		// add movement 
+		if (AttackMove == false)
+		{
+			AddMovementInput(ForwardDirection, 1);
+			AddMovementInput(RightDirection, 1);
+		}
+		else
+		{
+			AddMovementInput(ForwardDirection * 0.1f, 1);
+			AddMovementInput(RightDirection * 0.1f, 1);
+		}
+	}
+	else
+	{
+		if (AttackMove == false)
+		{
+			SetAniState(PLAYER_ANISTATE::IDLE);
+		}
+	}
+}
+
+void AMainCharacter::Look(const FInputActionValue& Instance)
+{
+	FVector2D DeltaPos = Instance.Get<FVector2D>();
+	DeltaPos *= 0.5;
+	UE_LOG(LogTemp, Log, TEXT("%s"), *DeltaPos.ToString())
+
+	AddControllerYawInput(DeltaPos.X);
+	AddControllerPitchInput(-DeltaPos.Y);
+}
+
+void AMainCharacter::SwordAttack(const FInputActionValue& Instance)
 {
 	if (bEquipBow && GetAniState() != (int)PLAYER_ANISTATE::JUMP)
 	{
@@ -500,7 +418,7 @@ void AMainCharacter::AttackAction()
 
 	case PLAYER_ANISTATE::JUMP:
 	{
-		if(bEquipSword==true)
+		if (bEquipSword == true)
 		{
 			SetAniState(PLAYER_ANISTATE::ATTACK1);
 			break;
@@ -545,105 +463,107 @@ void AMainCharacter::AttackAction()
 		return;
 	}
 
-
 }
 
-void AMainCharacter::BowAttackStart()
+void AMainCharacter::BowAttack(const FInputActionValue& Instance)
 {
-	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+	if (Instance.Get<bool>() == true) //오른쪽 마우스 버튼 꾹 눌렀을때
 	{
-	case PLAYER_ANISTATE::IDLE:
-	case PLAYER_ANISTATE::WALK:
-	case PLAYER_ANISTATE::RUN:
-	case PLAYER_ANISTATE::DASH:
-		break;
-	default:
-		return;
+
+		switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+		{
+		case PLAYER_ANISTATE::IDLE:
+		case PLAYER_ANISTATE::WALK:
+		case PLAYER_ANISTATE::RUN:
+		case PLAYER_ANISTATE::DASH:
+			break;
+		default:
+			return;
+		}
+		if (bEquipSword)
+		{
+			SetAniState(PLAYER_ANISTATE::SWORD_OFF);
+		}
+		else
+		{
+			if (bEquipBow)
+			{
+				SetAniState(PLAYER_ANISTATE::BOW_CHARGE);
+
+				if (ArrowActor == nullptr)
+				{
+					FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
+
+					UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
+
+					ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
+
+					FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+					Rule.ScaleRule = EAttachmentRule::KeepWorld;
+					ArrowActor->AttachToComponent(GetMesh(), Rule, FName("Weapon_R"));
+				}
+			}
+			else
+			{
+				SetAniState(PLAYER_ANISTATE::BOW_ON);
+				if (ArrowActor == nullptr)
+				{
+					FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
+
+					UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
+
+					ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
+
+					FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
+					Rule.ScaleRule = EAttachmentRule::KeepWorld;
+					ArrowActor->AttachToComponent(GetMesh(), Rule, FName("Weapon_R"));
+				}
+			}
+		}
 	}
-	if (bEquipSword)
+	else //오른쪽 마우스 버튼 뗏을 때
 	{
-		SetAniState(PLAYER_ANISTATE::SWORD_OFF);
-	}
-	else
-	{
+		switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+		{
+		case PLAYER_ANISTATE::BOW_CHARGE:
+			break;
+		default:
+			return;
+		}
 		if (bEquipBow)
 		{
-			SetAniState(PLAYER_ANISTATE::BOW_CHARGE);
-
-			if (ArrowActor == nullptr)
+			if (BowChargeTime > 0.4f)
 			{
-				FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
+				SetAniState(PLAYER_ANISTATE::BOW_SHOOT);
 
-				UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
+				if (ArrowActor != nullptr)
+				{
+					ArrowActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+					UStaticMeshComponent* ArrowMesh = Cast<UStaticMeshComponent>(ArrowActor->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+					//ArrowMesh->SetSimulatePhysics(true);
+					FVector Forward = ArrowMesh->GetForwardVector();
 
-				ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
+					UProjectileMovementComponent* ArrowMove = Cast<UProjectileMovementComponent>(ArrowActor->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
 
-				FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
-				Rule.ScaleRule = EAttachmentRule::KeepWorld;
-				ArrowActor->AttachToComponent(GetMesh(), Rule, FName("Weapon_R"));
+					ArrowMove->bSimulationEnabled = true;
+
+					float Velocity = BowChargeTime > 0.7f ? 5000.f * 0.7f : 5000.f * BowChargeTime;
+					ArrowMove->Velocity = (Forward * Velocity);
+
+					UNiagaraComponent* ArrowTrail = Cast<UNiagaraComponent>(ArrowActor->GetComponentByClass(UNiagaraComponent::StaticClass()));
+
+					ArrowTrail->Activate();
+					ArrowActor->Tags.Add(TEXT("PlayerAttack"));
+					ArrowActor = nullptr;
+				}
+
 			}
-		}
-		else
-		{
-			SetAniState(PLAYER_ANISTATE::BOW_ON);
-			if (ArrowActor == nullptr)
+			else
 			{
-				FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
-
-				UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
-
-				ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
-
-				FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
-				Rule.ScaleRule = EAttachmentRule::KeepWorld;
-				ArrowActor->AttachToComponent(GetMesh(), Rule, FName("Weapon_R"));
+				SetAniState(PLAYER_ANISTATE::IDLE);
 			}
 		}
 	}
-	//ChangeWeaponSocket(BowPtr, "Weapon_L");
-}
-
-void AMainCharacter::BowAttackEnd()
-{
-	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
-	{
-	case PLAYER_ANISTATE::BOW_CHARGE:
-		break;
-	default:
-		return;
-	}
-	if (bEquipBow)
-	{
-		if (BowChargeTime > 0.4f)
-		{
-			SetAniState(PLAYER_ANISTATE::BOW_SHOOT);
-
-			if (ArrowActor != nullptr)
-			{
-				ArrowActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-				UStaticMeshComponent* ArrowMesh = Cast<UStaticMeshComponent>(ArrowActor->GetComponentByClass(UStaticMeshComponent::StaticClass()));
-				//ArrowMesh->SetSimulatePhysics(true);
-				FVector Forward = ArrowMesh->GetForwardVector();
-
-				UProjectileMovementComponent* ArrowMove = Cast<UProjectileMovementComponent>(ArrowActor->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
-
-				ArrowMove->bSimulationEnabled = true;
-				ArrowMove->Velocity = (Forward * 3000.f);
-
-				UNiagaraComponent* ArrowTrail = Cast<UNiagaraComponent>(ArrowActor->GetComponentByClass(UNiagaraComponent::StaticClass()));
-
-				ArrowTrail->Activate();
-				ArrowActor->Tags.Add(TEXT("PlayerAttack"));
-				ArrowActor = nullptr;
-			}
-
-		}
-		else
-		{
-			SetAniState(PLAYER_ANISTATE::IDLE);
-		}
-	}
-
 }
 
 float AMainCharacter::GetRightHandBlending()

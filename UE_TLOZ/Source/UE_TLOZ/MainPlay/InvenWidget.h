@@ -15,9 +15,8 @@ class UE_TLOZ_API UInvenWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintCallable)
-	void AddInvenItem(FName ItemName = "None");
 
+	UFUNCTION(BlueprintCallable)
 	void Refresh();
 protected:
 	void NativeConstruct() override;

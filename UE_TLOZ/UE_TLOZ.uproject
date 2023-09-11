@@ -14,7 +14,8 @@
 				"CoreUObject",
 				"AIModule",
 				"Niagara",
-				"NavigationSystem"
+				"NavigationSystem",
+				"EnhancedInput"
 			]
 		}
 	],

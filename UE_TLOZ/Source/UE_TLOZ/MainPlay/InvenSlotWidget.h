@@ -23,6 +23,8 @@ public:
 
 	void Refresh();
 
+	
+
 public:
 
 	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)

@@ -9,25 +9,53 @@
 
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class UE_TLOZ_API UInvenItem : public UObject
 {
 	GENERATED_BODY()
 
-public:
+public: //nπ¯ƒ≠ æ∆¿Ã≈€
 	UInvenItem();
 	~UInvenItem();
 
 	void SetItemData(FName _ItemName);
-	void SetItemData(FItemData* _ItemData);
+	void SetItemData(const FItemData* _ItemData);
+
+	const FItemData* GetItemData()
+	{
+		return ItemData;
+	}
+
+
+	int GetItemCnt()
+	{
+		return ItemCnt;
+	}
+
+	void AddItemCnt(int _Cnt)
+	{
+		ItemCnt += _Cnt;
+	}
+	void SetItemCnt(int _Cnt)
+	{
+		ItemCnt = _Cnt;
+	}
+
+	class UInvenSlotWidget* GetWidget()
+	{
+		return Widget;
+	}
+	void SetWidget(class UInvenSlotWidget* _Widget)
+	{
+		Widget = _Widget;
+	}
+
+	FName GetItemName();
 
 	UFUNCTION(BlueprintCallable)
-	FItemData GetInvenItemData()
-	{
-		return *ItemData;
-	}
-public:
-	FItemData* ItemData = nullptr;
+	void UseItem();
+private: 
+	const FItemData* ItemData = nullptr;
 	int ItemCnt = 0;
 	class UInvenSlotWidget* Widget = nullptr;
 };

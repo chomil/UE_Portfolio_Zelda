@@ -17,8 +17,6 @@ public:
 	UInventory();
 	~UInventory();
 
-	
-
 public:
 	void AddItem(FName ItemName, int Num = 1);
 
@@ -26,6 +24,8 @@ public:
 	{
 		return InvenItems;
 	}
+
+	void RefreshInven();
 
 private:
 	UPROPERTY()
