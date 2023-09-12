@@ -47,14 +47,14 @@ void UGlobalGameInstance::Init()
 	Inventory = NewObject<UInventory>(GetWorld());
 }
 
-FMonsterData* UGlobalGameInstance::GetMonsterData(FName _Name)
+const FMonsterData* UGlobalGameInstance::GetMonsterData(FName _Name)
 {
 	if (nullptr == MonsterDatas)
 	{
 		return nullptr;
 	}
 
-	FMonsterData* FindTable = MonsterDatas->FindRow<FMonsterData>(_Name, _Name.ToString());
+	const FMonsterData* FindTable = MonsterDatas->FindRow<FMonsterData>(_Name, _Name.ToString());
 
 	if (nullptr == FindTable)
 	{
@@ -64,18 +64,23 @@ FMonsterData* UGlobalGameInstance::GetMonsterData(FName _Name)
 	return FindTable;
 }
 
-FItemData* UGlobalGameInstance::GetItemData(FName _Name)
+const FItemData* UGlobalGameInstance::GetItemData(FName _Name)
 {
 	if (nullptr == ItemDatas)
 	{
 		return nullptr;
 	}
 
-	FItemData* FindTable = ItemDatas->FindRow<FItemData>(_Name, _Name.ToString());
+	const FItemData* FindTable = ItemDatas->FindRow<FItemData>(_Name, _Name.ToString());
 
 	if (nullptr == FindTable)
 	{
 		return nullptr;
 	}
 	return FindTable;
+}
+
+const FItemData& UGlobalGameInstance::GetItemDataRef(FName _Name)
+{
+	return *GetItemData(_Name);
 }

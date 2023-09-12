@@ -27,28 +27,16 @@ public:
 
 public:
 
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	UPROPERTY(Category = "ItemSlot", EditAnywhere, blueprintReadWrite)
 	int ListIndex = 0;
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	UPROPERTY(Category = "ItemSlot", EditAnywhere, blueprintReadWrite)
 	UInvenItem* InvenItem = nullptr;
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	int ItemCnt = 0;
 
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	UTexture* ItemTexture = nullptr;
 
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	bool bShowItem = false;
+	UPROPERTY(Category = "ItemSlot", EditAnywhere, blueprintReadWrite)
+	bool bShowItem = true;
 
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
+	UPROPERTY(Category = "ItemSlot", EditAnywhere, blueprintReadWrite)
 	bool bShowSlot = true;
 
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	bool bIsItem = false;
-
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	bool bIsEquip = false;
-
-	UPROPERTY(Category = "Item", EditAnywhere, blueprintReadWrite)
-	bool bIsSelect = false;
 };

@@ -18,14 +18,13 @@ public: //n번칸 아이템
 	UInvenItem();
 	~UInvenItem();
 
-	void SetItemData(FName _ItemName);
-	void SetItemData(const FItemData* _ItemData);
+	void SetItemData(FName _ItemName, int _Num = 1, bool _Equip = false);
+	void SetItemData(const FItemData* _ItemData, int _Num = 1, bool _Equip = false);
 
 	const FItemData* GetItemData()
 	{
 		return ItemData;
 	}
-
 
 	int GetItemCnt()
 	{
@@ -50,12 +49,37 @@ public: //n번칸 아이템
 		Widget = _Widget;
 	}
 
+	UFUNCTION(BlueprintCallable)
 	FName GetItemName();
+
+	bool GetIsEquip()
+	{
+		return bIsEquip;
+	}
+
+
+	UFUNCTION(BlueprintCallable)
+	UTexture* GetItemTexture();
 
 	UFUNCTION(BlueprintCallable)
 	void UseItem();
+
+	
+	UFUNCTION(BlueprintCallable)
+	void SelectItem(bool _Select = true);
+
+
 private: 
 	const FItemData* ItemData = nullptr;
+	class UInvenSlotWidget* Widget = nullptr; 	
+
+	UPROPERTY(Category = "Item", blueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int ItemCnt = 0;
-	class UInvenSlotWidget* Widget = nullptr;
+
+	UPROPERTY(Category = "Item", blueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsItem = false;
+	UPROPERTY(Category = "Item", blueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsSelect = false;
+	UPROPERTY(Category = "Item", blueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsEquip = false;
 };

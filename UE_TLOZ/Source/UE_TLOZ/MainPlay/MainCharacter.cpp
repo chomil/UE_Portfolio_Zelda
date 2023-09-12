@@ -371,7 +371,7 @@ void AMainCharacter::Look(const FInputActionValue& Instance)
 {
 	FVector2D DeltaPos = Instance.Get<FVector2D>();
 	DeltaPos *= 0.5;
-	UE_LOG(LogTemp, Log, TEXT("%s"), *DeltaPos.ToString())
+	//UE_LOG(LogTemp, Log, TEXT("%s"), *DeltaPos.ToString())
 
 	AddControllerYawInput(DeltaPos.X);
 	AddControllerPitchInput(-DeltaPos.Y);

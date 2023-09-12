@@ -13,7 +13,7 @@ UInvenItem::~UInvenItem()
 {
 }
 
-void UInvenItem::SetItemData(FName _ItemName)
+void UInvenItem::SetItemData(FName _ItemName, int _Num, bool _Equip)
 {
 	if (GetWorld() == nullptr)
 	{
@@ -26,17 +26,38 @@ void UInvenItem::SetItemData(FName _ItemName)
 		ItemData = Inst->GetItemData(_ItemName);
 		if (ItemData == nullptr)
 		{
-			ItemCnt = 0;
+			ItemCnt = 0;		
+			bIsItem = false;
+		}
+		else
+		{
+			ItemCnt = _Num;
+			bIsItem = true;
+
+			if (ItemData->bEqipable == true)
+			{
+				bIsEquip = _Equip;
+			}
 		}
 	}
 }
 
-void UInvenItem::SetItemData(const FItemData* _ItemData)
+void UInvenItem::SetItemData(const FItemData* _ItemData, int _Num, bool _Equip)
 {
 	ItemData = _ItemData;
-	if (_ItemData == nullptr)
+	if (ItemData == nullptr)
 	{
 		ItemCnt = 0;
+		bIsItem = false;
+	}
+	else
+	{
+		ItemCnt = _Num;
+		bIsItem = true;
+		if (ItemData->bEqipable == true)
+		{
+			bIsEquip = _Equip;
+		}
 	}
 }
 
@@ -49,17 +70,35 @@ FName UInvenItem::GetItemName()
 	return ItemData->ItemName;
 }
 
+UTexture* UInvenItem::GetItemTexture()
+{
+	if (ItemData == nullptr)
+	{
+		return nullptr;
+	}
+	return ItemData->SlotIcon;
+}
+
 void UInvenItem::UseItem()
 {
 	if (ItemData == nullptr || ItemCnt <= 0 || Widget == nullptr)
 	{
 		return;
 	}
-	ItemCnt--;
-	if (ItemCnt <= 0)
+	if (ItemData->bUsable == true)
 	{
-		ItemData = nullptr;
+		ItemCnt--;
+		if (ItemCnt <= 0)
+		{
+			ItemData = nullptr;
+		}
 	}
 	Widget->Refresh();
 }
+
+void UInvenItem::SelectItem(bool _Select)
+{
+	bIsSelect = _Select;
+}
+
 

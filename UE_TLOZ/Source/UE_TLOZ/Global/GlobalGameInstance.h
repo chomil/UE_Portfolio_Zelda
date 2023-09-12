@@ -22,11 +22,14 @@ public:
 
 	void Init()override;
 
-	struct FMonsterData* GetMonsterData(FName _Name);
+	const struct FMonsterData* GetMonsterData(FName _Name);
 
+	const struct FItemData* GetItemData(FName _Name);
 
-	struct FItemData* GetItemData(FName _Name);
+	UFUNCTION(BlueprintCallable)
+	const struct FItemData& GetItemDataRef(FName _Name);
 
+	UFUNCTION(BlueprintCallable)
 	UInventory* GetInventory()
 	{
 		return Inventory;
