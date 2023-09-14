@@ -15,6 +15,14 @@ public:
 	// Sets default values for this character's properties
 	AGlobalCharacter();
 
+
+
+	template<typename EnumType>
+	bool IsAniState(EnumType _AniState)
+	{
+		return AniState == static_cast<int>(_AniState);
+	}
+
 	UFUNCTION(BlueprintCallable)
 	int GetAniState()
 	{

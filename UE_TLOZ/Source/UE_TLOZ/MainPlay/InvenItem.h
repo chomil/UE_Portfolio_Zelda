@@ -64,6 +64,7 @@ public: //n번칸 아이템
 	UFUNCTION(BlueprintCallable)
 	void UseItem();
 
+
 	
 	UFUNCTION(BlueprintCallable)
 	void SelectItem(bool _Select = true);

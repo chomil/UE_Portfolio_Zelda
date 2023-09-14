@@ -78,12 +78,16 @@ void AMonster::BeginPlay()
 
 void AMonster::Damaged(float _Damage, AGlobalCharacter* _AttackCharacter = nullptr)
 {
-	Super::Damaged(_Damage, _AttackCharacter);
-
-
-	GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), _Damage);
-
-	
+	if (IsAniState(MONSTER_AISTATE::STUN_START) || IsAniState(MONSTER_AISTATE::STUN_LOOP))
+	{
+		Super::Damaged(_Damage * 5, _AttackCharacter);
+		GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), _Damage * 5);
+	}
+	else
+	{
+		Super::Damaged(_Damage, _AttackCharacter);
+		GetBlackboardComponent()->SetValueAsFloat(TEXT("Damage"), _Damage);
+	}
 }
 
 void AMonster::Stunned(bool _bStun)

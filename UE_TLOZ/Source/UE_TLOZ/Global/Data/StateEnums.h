@@ -26,6 +26,14 @@ enum class PLAYER_ANISTATE : uint8
 	BOW_SHOOT
 };
 
+UENUM(BlueprintType)
+enum class PLAYER_ABILITY : uint8
+{
+	NONE,
+	REVERECO,
+	ULTRAHAND
+};
+
 
 UENUM(BlueprintType)
 enum class MONSTER_AISTATE : uint8

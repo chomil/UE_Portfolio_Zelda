@@ -14,7 +14,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+#include "InputAction.h"
 #include "MainHUD.h"
+#include "GamePlayWidget.h"
 
 
 
@@ -37,6 +39,8 @@ AMainCharacter::AMainCharacter()
 
 	Tags.Add(TEXT("Player"));
 
+
+
 }
 
 // Called to bind functionality to input
@@ -58,6 +62,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Input->BindAction(InputActionDash, ETriggerEvent::Triggered, this, &AMainCharacter::Dash);
 	Input->BindAction(InputActionDash, ETriggerEvent::Completed, this, &AMainCharacter::Dash);
 	Input->BindAction(InputActionMouseMove, ETriggerEvent::Triggered, this, &AMainCharacter::Look);
+	Input->BindAction(InputActionAbility, ETriggerEvent::Canceled, this, &AMainCharacter::Ability);
+	Input->BindAction(InputActionAbility, ETriggerEvent::Triggered, this, &AMainCharacter::Ability);
 
 }
 
@@ -89,10 +95,19 @@ void AMainCharacter::BeginPlay()
 	SpringArmCom = Cast<USpringArmComponent>(GetComponentByClass(USpringArmComponent::StaticClass()));
 
 	
-
-
 	HP = 10;
 	BowChargeTime = 0.f;
+
+
+	if (CursorAim == nullptr)
+	{
+		CursorAim = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), CursorAimReference);
+	}
+
+	if (CursorDefault == nullptr)
+	{
+		CursorDefault = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), CursorDefaultReference);
+	}
 }
 
 // Called every frame
@@ -151,11 +166,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		{
 			Rot.Pitch = 40;
 		}
-		//UE_LOG(LogTemp, Log, TEXT("%f Pitch"), Rot.Pitch);
 		GetController()->ClientSetRotation(Rot);
-		//FVector NewVec = FVector(0, 0, 0);
-		//GetController()->SetControlRotation(NewVec.Rotation());
-
 
 		// 활 시위 본 당기기
 		
@@ -234,6 +245,10 @@ void AMainCharacter::Tick(float DeltaTime)
 	case PLAYER_ANISTATE::DASH:
 	case PLAYER_ANISTATE::RUN:
 		bBowZoom = false;
+		GetCharacterMovement()->GroundFriction = 8.f;
+		ComboTime = 0.f;
+		BowChargeTime = 0.f;
+		break;
 	default:
 		GetCharacterMovement()->GroundFriction = 8.f;
 		ComboTime = 0.f;
@@ -250,25 +265,13 @@ void AMainCharacter::Tick(float DeltaTime)
 
 
 
-void AMainCharacter::Dash(const FInputActionValue& Instance)
+void AMainCharacter::Dash(const FInputActionInstance& Instance)
 {
+	bIsDash = Instance.GetValue().Get<bool>();
 	if (bTired)
 	{
 		bIsDash = false;
-		GetCharacterMovement()->MaxWalkSpeed = 400.f;
-		return;
 	}
-	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
-	{
-	case PLAYER_ANISTATE::IDLE:
-	case PLAYER_ANISTATE::WALK:
-	case PLAYER_ANISTATE::RUN:
-	case PLAYER_ANISTATE::DASH:
-		break;
-	default:
-		return;
-	}
-	bIsDash = Instance.Get<bool>();
 	if (bIsDash == true)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 700.f;
@@ -280,7 +283,7 @@ void AMainCharacter::Dash(const FInputActionValue& Instance)
 }
 
 
-void AMainCharacter::PlayerJump(const FInputActionValue& Instance)
+void AMainCharacter::PlayerJump(const FInputActionInstance& Instance)
 {
 	if (GetAniState() == (int)PLAYER_ANISTATE::JUMP || GetAniState() == (int)PLAYER_ANISTATE::LAND)
 	{
@@ -292,9 +295,9 @@ void AMainCharacter::PlayerJump(const FInputActionValue& Instance)
 }
 
 
-void AMainCharacter::Move(const FInputActionValue& Instance)
+void AMainCharacter::Move(const FInputActionInstance& Instance)
 {
-	FVector2D MoveVec = Instance.Get<FVector2D>();
+	FVector2D MoveVec = Instance.GetValue().Get<FVector2D>();
 
 
 	InputDir.X = MoveVec.X;
@@ -311,7 +314,6 @@ void AMainCharacter::Move(const FInputActionValue& Instance)
 	case PLAYER_ANISTATE::ATTACK1:
 	case PLAYER_ANISTATE::ATTACK2:
 	case PLAYER_ANISTATE::ATTACK3:
-	case PLAYER_ANISTATE::BOW_CHARGE:
 		AttackMove = true;
 		break;
 	default:
@@ -324,7 +326,23 @@ void AMainCharacter::Move(const FInputActionValue& Instance)
 		{
 			if (bIsDash == true)
 			{
-				SetAniState(PLAYER_ANISTATE::DASH);
+				if (bEquipBow)
+				{
+					SetAniState(PLAYER_ANISTATE::BOW_OFF);
+					if (ArrowActor != nullptr)
+					{
+						ArrowActor->Destroy();
+						ArrowActor = nullptr;
+					}
+				}
+				else if (bEquipSword)
+				{
+					SetAniState(PLAYER_ANISTATE::SWORD_OFF);
+				}
+				else
+				{
+					SetAniState(PLAYER_ANISTATE::DASH);
+				}
 			}
 			else
 			{
@@ -367,9 +385,9 @@ void AMainCharacter::Move(const FInputActionValue& Instance)
 	}
 }
 
-void AMainCharacter::Look(const FInputActionValue& Instance)
+void AMainCharacter::Look(const FInputActionInstance& Instance)
 {
-	FVector2D DeltaPos = Instance.Get<FVector2D>();
+	FVector2D DeltaPos = Instance.GetValue().Get<FVector2D>();
 	DeltaPos *= 0.5;
 	//UE_LOG(LogTemp, Log, TEXT("%s"), *DeltaPos.ToString())
 
@@ -377,12 +395,11 @@ void AMainCharacter::Look(const FInputActionValue& Instance)
 	AddControllerPitchInput(-DeltaPos.Y);
 }
 
-void AMainCharacter::SwordAttack(const FInputActionValue& Instance)
+void AMainCharacter::SwordAttack(const FInputActionInstance& Instance)
 {
-	if (bEquipBow && GetAniState() != (int)PLAYER_ANISTATE::JUMP)
+	if (bEquipBow && IsAniState(PLAYER_ANISTATE::JUMP)==false)
 	{
 		SetAniState(PLAYER_ANISTATE::BOW_OFF);
-		ChangeWeaponSocket(BowMeshComponent, "Bow_Wait");
 		if (ArrowActor != nullptr)
 		{
 			ArrowActor->Destroy();
@@ -421,53 +438,63 @@ void AMainCharacter::SwordAttack(const FInputActionValue& Instance)
 		if (bEquipSword == true)
 		{
 			SetAniState(PLAYER_ANISTATE::ATTACK1);
-			break;
 		}
+		break;
 	}
 	case PLAYER_ANISTATE::ATTACK1:
+	{
 		if (ComboTime > 0.3f)
 		{
 			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK2);
-			break;
 		}
+		break;
+	}
 	case PLAYER_ANISTATE::ATTACK2:
+	{
 		if (ComboTime > 0.3f)
 		{
 			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK3);
-			break;
 		}
+		break;
+	}
 	case PLAYER_ANISTATE::ATTACK3:
+	{
 		if (ComboTime > 0.3f)
 		{
 			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK4);
-			break;
 		}
+		break;
+	}
 	case PLAYER_ANISTATE::ATTACK4:
+	{
 		if (ComboTime > 0.9f)
 		{
 			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK1);
-			break;
 		}
+		break;
+	}
 	case PLAYER_ANISTATE::ATTACK_DASH:
+	{
 		if (ComboTime > 0.6f)
 		{
 			ComboTime = 0.f;
 			SetAniState(PLAYER_ANISTATE::ATTACK1);
-			break;
 		}
+		break;
+	}
 	default:
-		return;
+		break;
 	}
 
 }
 
-void AMainCharacter::BowAttack(const FInputActionValue& Instance)
+void AMainCharacter::BowAttack(const FInputActionInstance& Instance)
 {
-	if (Instance.Get<bool>() == true) //오른쪽 마우스 버튼 꾹 눌렀을때
+	if (Instance.GetValue().Get<bool>() == true) //오른쪽 마우스 버튼 꾹 눌렀을때
 	{
 
 		switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
@@ -566,6 +593,60 @@ void AMainCharacter::BowAttack(const FInputActionValue& Instance)
 	}
 }
 
+void AMainCharacter::Ability(const FInputActionInstance& Instance)
+{
+	bool Triggered = Instance.GetValue().Get<bool>();
+	const float Time = Instance.GetElapsedTime();
+	APlayerController* HUDController = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+	AMainHUD* HUD = HUDController->GetHUD<AMainHUD>();
+	if (HUD == nullptr || HUD->IsValidLowLevel() == false)
+	{
+		return;
+	}
+	if (Triggered == true) //능력 변경 UI
+	{
+		UE_LOG(LogTemp, Log, TEXT("능력변경 시작"));
+		HUD->GetMainWidget()->SetAbilityVisible(true);
+	}
+	else 
+	{
+		if (Time < 0.5f) //능력 시전
+		{
+			UE_LOG(LogTemp, Log, TEXT("능력시전"));
+			Revereco(!bIsAbility);
+		}
+		else //능력 변경 캔슬
+		{
+			UE_LOG(LogTemp, Log, TEXT("능력변경 완료"));
+			HUD->GetMainWidget()->SetAbilityVisible(false);
+		}
+	}
+}
+
+void AMainCharacter::Revereco(bool bStart)
+{
+	bIsAbility = bStart;
+	if (bStart == true)
+	{
+		GetWorld()->GetFirstPlayerController()->SetPause(true);
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameAndUI());
+		
+		GetWorld()->GetFirstPlayerController()->SetMouseCursorWidget(EMouseCursor::Default, CursorAim);
+		int32 ScreenX, ScreenY;
+		GetWorld()->GetFirstPlayerController()->GetViewportSize(ScreenX, ScreenY);
+		GetWorld()->GetFirstPlayerController()->SetMouseLocation(ScreenX / 2, ScreenY/2);
+	}
+	else
+	{
+		GetWorld()->GetFirstPlayerController()->SetPause(false);
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
+
+		GetWorld()->GetFirstPlayerController()->SetMouseCursorWidget(EMouseCursor::Default, CursorDefault);
+	}
+}
+
 float AMainCharacter::GetRightHandBlending()
 {
 
@@ -603,6 +684,11 @@ float AMainCharacter::GetBowHandBlending()
 	default:
 		return 0.0f;
 	}
+}
+
+bool AMainCharacter::IsAttacking()
+{
+	return false;
 }
 
 void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)

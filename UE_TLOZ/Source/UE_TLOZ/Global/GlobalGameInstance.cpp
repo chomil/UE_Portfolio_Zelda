@@ -2,9 +2,9 @@
 
 
 #include "GlobalGameInstance.h"
+#include "GlobalStatic.h"
 #include <Global/Data/MonsterData.h>
 #include <Global/Data/ItemData.h>
-#include "GlobalStatic.h"
 
 UGlobalGameInstance::UGlobalGameInstance()
 {
@@ -82,5 +82,15 @@ const FItemData* UGlobalGameInstance::GetItemData(FName _Name)
 
 const FItemData& UGlobalGameInstance::GetItemDataRef(FName _Name)
 {
-	return *GetItemData(_Name);
+	const FItemData* ItemData = GetItemData(_Name);
+
+	if (ItemData != nullptr)
+	{
+		return *ItemData;
+	}
+	else
+	{
+		return *GetItemData(TEXT("NULL"));
+	}
+
 }

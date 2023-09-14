@@ -31,7 +31,6 @@ protected:
 
 private:
 	//Input
-		//Setting up inputs. Mapping context and Input Action variables, to be set in Blueprint
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* InputMapping;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
@@ -46,21 +45,30 @@ private:
 	class UInputAction* InputActionSword;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* InputActionBow;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InputActionAbility;
 
 public:	
 
-	void Move(const struct FInputActionValue& Instance);
-	void Look(const struct FInputActionValue& Instance);
-	void PlayerJump(const struct FInputActionValue& Instance);
-	void Dash(const struct FInputActionValue& Instance);
-	void SwordAttack(const struct FInputActionValue& Instance);
-	void BowAttack(const struct FInputActionValue& Instance);
+	void Move(const struct FInputActionInstance& Instance);
+	void Look(const struct FInputActionInstance& Instance);
+	void PlayerJump(const struct FInputActionInstance& Instance);
+	void Dash(const struct FInputActionInstance& Instance);
+	void SwordAttack(const struct FInputActionInstance& Instance);
+	void BowAttack(const struct FInputActionInstance& Instance);
+
+	void Ability(const struct FInputActionInstance& Instance);
+
+	void Revereco(bool bStart);
 
 	UFUNCTION(BlueprintCallable)
 		float GetRightHandBlending();
 
 	UFUNCTION(BlueprintCallable)
-		float GetBowHandBlending();
+	float GetBowHandBlending();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsAttacking();
 
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Anim, bool _Inter);
@@ -70,10 +78,23 @@ public:
 
 public:
 	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
-		PLAYER_ANISTATE PlayerAniState = PLAYER_ANISTATE::IDLE;
+	PLAYER_ANISTATE PlayerAniState = PLAYER_ANISTATE::IDLE;
 
 	UPROPERTY(Category = "AnimationValue", EditAnywhere, BlueprintReadWrite)
-		TMap<PLAYER_ANISTATE, class UAnimMontage*> PlayerAllAnimations;
+	TMap<PLAYER_ANISTATE, class UAnimMontage*> PlayerAllAnimations;
+
+	PLAYER_ABILITY PlayerAbility = PLAYER_ABILITY::REVERECO;
+	bool bIsAbility = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CursorWidget To Load")
+	TSubclassOf<UUserWidget> CursorDefaultReference;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CursorWidget To Load")
+	TSubclassOf<UUserWidget> CursorAimReference;
+	UPROPERTY()
+	class UUserWidget* CursorDefault = nullptr;
+	UPROPERTY()
+	class UUserWidget* CursorAim = nullptr;
+
 
 	FVector InputDir = FVector::ZeroVector;
 	bool bIsDash = false;
@@ -105,6 +126,11 @@ public:
 	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
 	class UNiagaraSystem* HitStrongParticle;
 
+
+	
+
+	UPROPERTY(Category = "Items", EditAnywhere, BlueprintReadWrite)
+	TArray<AActor*> FrontItems;
 protected:
 	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 
@@ -133,4 +159,5 @@ private:
 		);
 
 	class USpringArmComponent* SpringArmCom;
+
 };
