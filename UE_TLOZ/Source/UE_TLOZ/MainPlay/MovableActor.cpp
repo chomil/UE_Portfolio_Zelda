@@ -4,6 +4,7 @@
 #include "MainPlay/MovableActor.h"
 #include <Global/GlobalCharacter.h>
 
+
 // Sets default values
 AMovableActor::AMovableActor()
 {
@@ -11,12 +12,35 @@ AMovableActor::AMovableActor()
 	PrimaryActorTick.bCanEverTick = true;
 	bAsyncPhysicsTickEnabled = true;
 	MaxRecord = 600;
+
+	{
+		FString Path = TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Resources/OverlayMaterial/MI_Overlay_Rewind.MI_Overlay_Rewind'");
+		ConstructorHelpers::FObjectFinder<UMaterialInstance> Asset(*Path);
+
+		if (Asset.Succeeded())
+		{
+			OverlayMaterial_Rewind = Asset.Object;
+		}
+	}
+	{
+		FString Path = TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Resources/OverlayMaterial/MI_Overlay_RewindWait.MI_Overlay_RewindWait'");
+		ConstructorHelpers::FObjectFinder<UMaterialInstance> Asset(*Path);
+
+		if (Asset.Succeeded())
+		{
+			OverlayMaterial_RewindWait = Asset.Object;
+		}
+		
+	}
+
 }
 
 // Called when the game starts or when spawned
 void AMovableActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Tags.Add(TEXT("MovableActor"));
 
 	Mesh = Cast<UStaticMeshComponent>(GetComponentByClass(UStaticMeshComponent::StaticClass()));
 	Mesh->OnComponentHit.AddDynamic(this,&AMovableActor::HitActor);
@@ -89,12 +113,36 @@ void AMovableActor::SetTimeRewind(bool _bTimeRewind)
 		{
 			Mesh->SetEnableGravity(false);
 			Mesh->SetSimulatePhysics(false);
+			Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
+			Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector, false);
+			
+			SetOverlay(true, true);
 		}
 		else
 		{
 			Mesh->SetSimulatePhysics(true);
 			Mesh->SetEnableGravity(true);
+			Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
+			Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector, false);
+
+			SetOverlay(false, false);
 		}
+	}
+}
+
+void AMovableActor::SetOverlay(bool _IsRewind, bool _IsSelect)
+{
+	if (_IsSelect == true)
+	{
+		Mesh->SetOverlayMaterial(OverlayMaterial_Rewind);
+	}
+	else if (_IsRewind == true && _IsSelect == false)
+	{
+		Mesh->SetOverlayMaterial(OverlayMaterial_RewindWait);
+	}
+	else
+	{
+		Mesh->SetOverlayMaterial(nullptr);
 	}
 }
 

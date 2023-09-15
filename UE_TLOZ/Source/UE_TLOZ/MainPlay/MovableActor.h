@@ -22,6 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -29,8 +30,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetTimeRewind(bool _bTimeRewind);
 
+	void SetOverlay(bool _IsRewind, bool _IsSelect);
+
 private:
-	//TArray<FTransform> TransformRecord;
+	UPROPERTY()
+	UMaterialInstance* OverlayMaterial_Rewind = nullptr;
+
+	UPROPERTY()
+	UMaterialInstance* OverlayMaterial_RewindWait = nullptr;
+
+
 	TDeque<FTransform> TransformRecord;
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int CurRecord = 0;
@@ -38,7 +47,8 @@ private:
 	int MaxRecord = 0;
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bTimeRewind = false;
-
+	
+	UPROPERTY()
 	UStaticMeshComponent* Mesh = nullptr;
 
 	FVector DeltaPos;

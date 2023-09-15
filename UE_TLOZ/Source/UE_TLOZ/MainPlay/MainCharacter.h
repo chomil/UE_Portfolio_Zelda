@@ -29,6 +29,7 @@ protected:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
 private:
 	//Input
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input", meta = (AllowPrivateAccess = "true"))
@@ -131,9 +132,6 @@ public:
 
 	UPROPERTY(Category = "Items", EditAnywhere, BlueprintReadWrite)
 	TArray<AActor*> FrontItems;
-protected:
-	void Damaged(float _Damage, AGlobalCharacter* _AttackCharacter) override;
-
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;

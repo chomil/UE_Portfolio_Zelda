@@ -17,6 +17,7 @@
 #include "InputAction.h"
 #include "MainHUD.h"
 #include "GamePlayWidget.h"
+#include "MovableActor.h"
 
 
 
@@ -199,6 +200,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		{
 			SP = 0;
 			bTired = true;
+			SetAniState(PLAYER_ANISTATE::TIRED);
 		}
 	}
 	else
@@ -285,8 +287,14 @@ void AMainCharacter::Dash(const FInputActionInstance& Instance)
 
 void AMainCharacter::PlayerJump(const FInputActionInstance& Instance)
 {
-	if (GetAniState() == (int)PLAYER_ANISTATE::JUMP || GetAniState() == (int)PLAYER_ANISTATE::LAND)
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
 	{
+	case PLAYER_ANISTATE::IDLE:
+	case PLAYER_ANISTATE::WALK:
+	case PLAYER_ANISTATE::RUN:
+	case PLAYER_ANISTATE::DASH:
+		break;
+	default:
 		return;
 	}
 
@@ -610,7 +618,7 @@ void AMainCharacter::Ability(const FInputActionInstance& Instance)
 	}
 	else 
 	{
-		if (Time < 0.5f) //능력 시전
+		if (Time < 0.5f) //능력 시전,취소
 		{
 			UE_LOG(LogTemp, Log, TEXT("능력시전"));
 			Revereco(!bIsAbility);
@@ -626,6 +634,10 @@ void AMainCharacter::Ability(const FInputActionInstance& Instance)
 void AMainCharacter::Revereco(bool bStart)
 {
 	bIsAbility = bStart;
+
+	TArray<AActor*> MovableActors;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("MovableActor"), MovableActors);
+
 	if (bStart == true)
 	{
 		GetWorld()->GetFirstPlayerController()->SetPause(true);
@@ -636,6 +648,20 @@ void AMainCharacter::Revereco(bool bStart)
 		int32 ScreenX, ScreenY;
 		GetWorld()->GetFirstPlayerController()->GetViewportSize(ScreenX, ScreenY);
 		GetWorld()->GetFirstPlayerController()->SetMouseLocation(ScreenX / 2, ScreenY/2);
+
+		SetAniState(PLAYER_ANISTATE::ABILITY_START);
+
+		for (AActor* Actor : MovableActors)
+		{
+			AMovableActor* MoveActor = Cast<AMovableActor>(Actor);
+			MoveActor->SetTimeRewind(false);
+			FVector TargetPos = Actor->GetActorLocation();
+			FVector MyPos = GetActorLocation();
+			if ((TargetPos - MyPos).Size() < 1500.f)
+			{
+				MoveActor->SetOverlay(true, false);
+			}
+		}
 	}
 	else
 	{
@@ -644,6 +670,15 @@ void AMainCharacter::Revereco(bool bStart)
 		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
 
 		GetWorld()->GetFirstPlayerController()->SetMouseCursorWidget(EMouseCursor::Default, CursorDefault);
+
+
+		SetAniState(PLAYER_ANISTATE::ABILITY_END);
+
+		for (AActor* Actor : MovableActors)
+		{
+			AMovableActor* MoveActor = Cast<AMovableActor>(Actor);
+			MoveActor->SetOverlay(false, false);
+		}
 	}
 }
 
@@ -712,14 +747,15 @@ void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)
 			GetAnimMontage(PLAYER_ANISTATE::HIT_M) == Anim || 
 			GetAnimMontage(PLAYER_ANISTATE::BOW_ON) == Anim ||
 			GetAnimMontage(PLAYER_ANISTATE::BOW_OFF) == Anim||
-			GetAnimMontage(PLAYER_ANISTATE::BOW_SHOOT) == Anim)
+			GetAnimMontage(PLAYER_ANISTATE::BOW_SHOOT) == Anim||
+			GetAnimMontage(PLAYER_ANISTATE::ABILITY_END) == Anim ||
+			GetAnimMontage(PLAYER_ANISTATE::TIRED) == Anim)
 		{
 			SetAniState(PLAYER_ANISTATE::IDLE);
 
 			GetMesh()->GetAnimInstance()->Montage_Play(GetAnimMontage(PLAYER_ANISTATE::IDLE), 1.0f);
 			UE_LOG(LogTemp, Log, TEXT("Player State : %s"), *UEnum::GetValueAsString(static_cast<PLAYER_ANISTATE>(GetAniState())));
 		}
-
 	}
 }
 
