@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Engine/DataTable.h"
-#include <MainPlay/Inventory.h>
 #include "GlobalGameInstance.generated.h"
 
 /**
@@ -30,7 +29,7 @@ public:
 	const struct FItemData& GetItemDataRef(FName _Name);
 
 	UFUNCTION(BlueprintCallable)
-	UInventory* GetInventory()
+	class UInventory* GetInventory()
 	{
 		return Inventory;
 	};
@@ -45,6 +44,6 @@ private:
 	UDataTable* ItemDatas;
 
 	UPROPERTY()
-	UInventory* Inventory;
+	class UInventory* Inventory;
 
 };

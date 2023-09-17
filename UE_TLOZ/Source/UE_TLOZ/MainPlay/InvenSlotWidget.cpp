@@ -13,16 +13,8 @@ void UInvenSlotWidget::AddInvenItem(UObject* _InvenItem)
 		return;
 	}
 
-	if (NewInvenItem->GetItemData() == nullptr) //빈칸을 만들때
-	{
-		InvenItem = NewInvenItem;
-		InvenItem->SetWidget(this);
-	}
-	else //아이템 정보가 있을 때
-	{
-		InvenItem = NewInvenItem;
-		InvenItem->SetWidget(this);
-	}
+	InvenItem = NewInvenItem;
+	InvenItem->SetWidget(this);
 }
 
 void UInvenSlotWidget::Refresh() //인벤토리창 켜져있을때 리프레시 필요할때

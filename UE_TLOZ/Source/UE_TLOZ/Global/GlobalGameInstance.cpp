@@ -5,6 +5,7 @@
 #include "GlobalStatic.h"
 #include <Global/Data/MonsterData.h>
 #include <Global/Data/ItemData.h>
+#include <MainPlay/Inventory.h>
 
 UGlobalGameInstance::UGlobalGameInstance()
 {

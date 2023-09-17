@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "InvenItem.h"
 #include "Inventory.generated.h"
 
 /**
@@ -21,7 +20,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddItem(FName _ItemName, int _Num = 1, bool _Equip = false);
 
-	const TArray<UInvenItem*>& GetItems()
+	const TArray<class UInvenItem*>& GetItems()
 	{
 		return InvenItems;
 	}
@@ -30,7 +29,7 @@ public:
 
 private:
 	UPROPERTY()
-	TArray<UInvenItem*> InvenItems;
+	TArray<class UInvenItem*> InvenItems;
 
 	UPROPERTY()
 	int MaxSlotNum = 0;

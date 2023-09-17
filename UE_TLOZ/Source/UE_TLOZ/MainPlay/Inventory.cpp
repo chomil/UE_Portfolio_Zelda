@@ -4,6 +4,7 @@
 #include "MainPlay/Inventory.h"
 #include <Global/GlobalGameInstance.h>
 #include "InvenSlotWidget.h"
+#include "InvenItem.h"
 
 UInventory::UInventory()
 {
