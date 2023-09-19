@@ -34,6 +34,18 @@ public:
 		return Inventory;
 	};
 
+
+	UFUNCTION(BlueprintCallable)
+	void SetGrayScreenBlend(float _Blend)
+	{
+		GrayScreenBlend = _Blend;
+	}
+	UFUNCTION(BlueprintCallable)
+	float GetGrayScreenBlend()
+	{
+		return GrayScreenBlend;
+	}
+
 private:
 
 	UPROPERTY()
@@ -45,5 +57,9 @@ private:
 
 	UPROPERTY()
 	class UInventory* Inventory;
+
+
+	UPROPERTY()
+	float GrayScreenBlend = 0.f;
 
 };

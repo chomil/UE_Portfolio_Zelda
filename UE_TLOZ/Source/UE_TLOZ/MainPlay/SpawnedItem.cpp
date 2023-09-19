@@ -38,7 +38,7 @@ void ASpawnedItem::Tick(float DeltaTime)
 void ASpawnedItem::InitByName(FName _SpawnedName)
 {
 	SpawnedName = _SpawnedName;
-	if (SpawnedName.IsValid())
+	if ( SpawnedName.IsNone() == false)
 	{
 		UGlobalGameInstance* inst = GetWorld()->GetGameInstance<UGlobalGameInstance>();
 		ItemData = inst->GetItemData(SpawnedName);
@@ -59,16 +59,19 @@ void ASpawnedItem::OverlapItem(class UPrimitiveComponent* OverlappedComp,
 {
 	if (OtherComp->ComponentHasTag(TEXT("ItemGet")))
 	{
-		UGlobalGameInstance* inst = GetWorld()->GetGameInstance<UGlobalGameInstance>();
-		inst->GetInventory()->AddItem(SpawnedName);
-
-		AMainHUD* hud = GetWorld()->GetFirstPlayerController()->GetHUD< AMainHUD>();
-		if (ItemData != nullptr)
+		if (SpawnedName.IsNone() == false)
 		{
-			hud->GetMainWidget()->ItemGetPop(*ItemData);
-		}
+			UGlobalGameInstance* inst = GetWorld()->GetGameInstance<UGlobalGameInstance>();
+			inst->GetInventory()->AddItem(SpawnedName);
 
-		Destroy();
+			AMainHUD* hud = GetWorld()->GetFirstPlayerController()->GetHUD< AMainHUD>();
+			if (ItemData != nullptr)
+			{
+				hud->GetMainWidget()->ItemGetPop(*ItemData);
+			}
+
+			Destroy();
+		}
 	}
 }
 

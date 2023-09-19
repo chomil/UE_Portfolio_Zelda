@@ -39,6 +39,10 @@ UInventory::~UInventory()
 void UInventory::AddItem(FName _ItemName, int _Num, bool _Equip)
 {
 	const FItemData* ItemData = GetWorld()->GetGameInstance<UGlobalGameInstance>()->GetItemData(_ItemName);
+	if (ItemData == nullptr)
+	{
+		return;
+	}
 	int GetIndex = -1;
 	for (int i = 0; i < InvenItems.Num(); i++)
 	{

@@ -18,6 +18,9 @@
 #include "MainHUD.h"
 #include "GamePlayWidget.h"
 #include "MovableActor.h"
+#include <Global/GlobalGameInstance.h>
+#include "Engine/Scene.h"
+
 
 
 
@@ -41,7 +44,7 @@ AMainCharacter::AMainCharacter()
 	Tags.Add(TEXT("Player"));
 
 
-
+	
 }
 
 // Called to bind functionality to input
@@ -72,7 +75,6 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 // Called when the game starts or when spawned
 void AMainCharacter::BeginPlay()
 {
-
 	SetAllAnimation(PlayerAllAnimations);
 	SetAniState(PLAYER_ANISTATE::IDLE);
 
@@ -109,6 +111,9 @@ void AMainCharacter::BeginPlay()
 	{
 		CursorDefault = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), CursorDefaultReference);
 	}
+
+	GetMesh()->SetRenderCustomDepth(true);
+	GetMesh()->SetCustomDepthStencilValue(1);
 }
 
 // Called every frame
@@ -603,6 +608,7 @@ void AMainCharacter::BowAttack(const FInputActionInstance& Instance)
 
 void AMainCharacter::Ability(const FInputActionInstance& Instance)
 {
+
 	bool Triggered = Instance.GetValue().Get<bool>();
 	const float Time = Instance.GetElapsedTime();
 	APlayerController* HUDController = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
@@ -620,6 +626,18 @@ void AMainCharacter::Ability(const FInputActionInstance& Instance)
 	{
 		if (Time < 0.5f) //능력 시전,취소
 		{
+			switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+			{
+			case PLAYER_ANISTATE::IDLE:
+			case PLAYER_ANISTATE::WALK:
+			case PLAYER_ANISTATE::RUN:
+			case PLAYER_ANISTATE::DASH:
+			case PLAYER_ANISTATE::ABILITY_START:
+				break;
+			default:
+				return;
+			}
+
 			UE_LOG(LogTemp, Log, TEXT("능력시전"));
 			Revereco(!bIsAbility);
 		}
@@ -651,13 +669,16 @@ void AMainCharacter::Revereco(bool bStart)
 
 		SetAniState(PLAYER_ANISTATE::ABILITY_START);
 
+		UGlobalGameInstance* Inst = GetWorld()->GetGameInstance<UGlobalGameInstance>();
+		Inst->SetGrayScreenBlend(1.0f);
+
 		for (AActor* Actor : MovableActors)
 		{
 			AMovableActor* MoveActor = Cast<AMovableActor>(Actor);
 			MoveActor->SetTimeRewind(false);
 			FVector TargetPos = Actor->GetActorLocation();
 			FVector MyPos = GetActorLocation();
-			if ((TargetPos - MyPos).Size() < 1500.f)
+			if ((TargetPos - MyPos).Size() < 3000.f)
 			{
 				MoveActor->SetOverlay(true, false);
 			}
@@ -673,6 +694,9 @@ void AMainCharacter::Revereco(bool bStart)
 
 
 		SetAniState(PLAYER_ANISTATE::ABILITY_END);
+
+		UGlobalGameInstance* Inst = GetWorld()->GetGameInstance<UGlobalGameInstance>();
+		Inst->SetGrayScreenBlend(0.0f);
 
 		for (AActor* Actor : MovableActors)
 		{
@@ -723,7 +747,17 @@ float AMainCharacter::GetBowHandBlending()
 
 bool AMainCharacter::IsAttacking()
 {
-	return false;
+	switch (static_cast<PLAYER_ANISTATE>(GetAniState()))
+	{
+	case PLAYER_ANISTATE::ATTACK1:
+	case PLAYER_ANISTATE::ATTACK2:
+	case PLAYER_ANISTATE::ATTACK3:
+	case PLAYER_ANISTATE::ATTACK4:
+	case PLAYER_ANISTATE::ATTACK_DASH:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void AMainCharacter::MontageEnd(UAnimMontage* Anim, bool _Inter)

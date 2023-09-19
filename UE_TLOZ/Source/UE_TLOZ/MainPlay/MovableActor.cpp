@@ -134,14 +134,23 @@ void AMovableActor::SetOverlay(bool _IsRewind, bool _IsSelect)
 {
 	if (_IsSelect == true)
 	{
+		Mesh->SetRenderCustomDepth(true);
+		Mesh->SetCustomDepthStencilValue(1);
+
 		Mesh->SetOverlayMaterial(OverlayMaterial_Rewind);
 	}
 	else if (_IsRewind == true && _IsSelect == false)
 	{
+		Mesh->SetRenderCustomDepth(true);
+		Mesh->SetCustomDepthStencilValue(1);
+
 		Mesh->SetOverlayMaterial(OverlayMaterial_RewindWait);
 	}
 	else
 	{
+		Mesh->SetRenderCustomDepth(false);
+		Mesh->SetCustomDepthStencilValue(0);
+
 		Mesh->SetOverlayMaterial(nullptr);
 	}
 }
