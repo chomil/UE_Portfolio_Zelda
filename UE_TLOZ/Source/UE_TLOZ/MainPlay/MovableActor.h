@@ -30,7 +30,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetTimeRewind(bool _bTimeRewind);
 
-	void SetOverlay(bool _IsRewind, bool _IsSelect);
+	void SetOverlay(bool _bIsAbility, bool _bIsSelect);
+
+	void SetInPlayerRange(bool _bInPlayerRange)
+	{
+		bInPlayerRange = _bInPlayerRange;
+	}
 
 private:
 	UPROPERTY()
@@ -51,11 +56,25 @@ private:
 	UPROPERTY()
 	UStaticMeshComponent* Mesh = nullptr;
 
-	FVector DeltaPos;
-	float VelPerSec;
+	FVector DeltaPos = FVector::ZeroVector;
+	float VelPerSec = 0.f;
 
 	float MovableDeltaVel = 0.f;
 
+
+	bool bInPlayerRange = false;
+
 	UFUNCTION()
 	void HitActor(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+	void OnCursorBegin(UPrimitiveComponent* TouchedComponent);
+
+	UFUNCTION()
+	void OnCursorEnd(UPrimitiveComponent* TouchedComponent);
+
+	UFUNCTION()
+	void Clicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed);
+
+
 };

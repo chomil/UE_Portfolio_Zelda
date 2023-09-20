@@ -87,7 +87,7 @@ void UGamePlayWidget::SetBossHPVisible(bool bShow, AGlobalCharacter* _TargetBoss
 {
 	if (bShow == true)
 	{
-		BossHPVisible = ESlateVisibility::Visible;
+		BossHPVisible = ESlateVisibility::HitTestInvisible;
 		TargetBoss = _TargetBoss;
 	}
 	else
@@ -98,7 +98,7 @@ void UGamePlayWidget::SetBossHPVisible(bool bShow, AGlobalCharacter* _TargetBoss
 
 void UGamePlayWidget::ItemGetPop(const FItemData& _ItemData)
 {
-	ItemPopVisible = ESlateVisibility::Visible;
+	ItemPopVisible = ESlateVisibility::HitTestInvisible;
 	ItemPopTick = 0.0f;
 	ItemTex = _ItemData.SlotIcon;
 	ItemName = _ItemData.ItemName;

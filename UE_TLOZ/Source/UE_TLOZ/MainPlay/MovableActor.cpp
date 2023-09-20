@@ -3,6 +3,7 @@
 
 #include "MainPlay/MovableActor.h"
 #include <Global/GlobalCharacter.h>
+#include "MainCharacter.h"
 
 
 // Sets default values
@@ -45,6 +46,11 @@ void AMovableActor::BeginPlay()
 	Mesh = Cast<UStaticMeshComponent>(GetComponentByClass(UStaticMeshComponent::StaticClass()));
 	Mesh->OnComponentHit.AddDynamic(this,&AMovableActor::HitActor);
 	Mesh->SetNotifyRigidBodyCollision(true);
+
+	//커서 상호작용 이벤트 바인딩
+	Mesh->OnBeginCursorOver.AddDynamic(this, &AMovableActor::OnCursorBegin);
+	Mesh->OnEndCursorOver.AddDynamic(this, &AMovableActor::OnCursorEnd);
+	Mesh->OnClicked.AddDynamic(this, &AMovableActor::Clicked);
 }
 
 // Called every frame
@@ -130,16 +136,16 @@ void AMovableActor::SetTimeRewind(bool _bTimeRewind)
 	}
 }
 
-void AMovableActor::SetOverlay(bool _IsRewind, bool _IsSelect)
+void AMovableActor::SetOverlay(bool _bIsAbility, bool _bIsSelect)
 {
-	if (_IsSelect == true)
+	if (_bIsSelect == true) //마우스 선택 시, 클릭됐을 시
 	{
 		Mesh->SetRenderCustomDepth(true);
 		Mesh->SetCustomDepthStencilValue(1);
 
 		Mesh->SetOverlayMaterial(OverlayMaterial_Rewind);
 	}
-	else if (_IsRewind == true && _IsSelect == false)
+	else if (_bIsAbility == true && _bIsSelect == false) //능력 대기 시
 	{
 		Mesh->SetRenderCustomDepth(true);
 		Mesh->SetCustomDepthStencilValue(1);
@@ -169,6 +175,37 @@ void AMovableActor::HitActor(UPrimitiveComponent* HitComponent, AActor* OtherAct
 		if (VelPerSec > 1000.f)
 		{
 			Cast<AGlobalCharacter>(OtherActor)->Damaged((int)VelPerSec / 1000, nullptr);
+		}
+	}
+}
+
+void AMovableActor::OnCursorBegin(UPrimitiveComponent* TouchedComponent)
+{
+	if (bInPlayerRange == true)
+	{
+		SetOverlay(true, true);
+	}
+}
+
+void AMovableActor::OnCursorEnd(UPrimitiveComponent* TouchedComponent)
+{
+	if (bInPlayerRange == true)
+	{
+		SetOverlay(true, false);
+	}
+}
+
+void AMovableActor::Clicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
+{
+	if (bInPlayerRange == true)
+	{
+		if (bTimeRewind == false)
+		{
+			AMainCharacter* Player = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+			Player->Revereco(false);
+
+
+			SetTimeRewind(true);
 		}
 	}
 }

@@ -660,6 +660,8 @@ void AMainCharacter::Revereco(bool bStart)
 	{
 		GetWorld()->GetFirstPlayerController()->SetPause(true);
 		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+		GetWorld()->GetFirstPlayerController()->bEnableMouseOverEvents = true;
+		GetWorld()->GetFirstPlayerController()->bEnableClickEvents = true;
 		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameAndUI());
 		
 		GetWorld()->GetFirstPlayerController()->SetMouseCursorWidget(EMouseCursor::Default, CursorAim);
@@ -678,9 +680,14 @@ void AMainCharacter::Revereco(bool bStart)
 			MoveActor->SetTimeRewind(false);
 			FVector TargetPos = Actor->GetActorLocation();
 			FVector MyPos = GetActorLocation();
-			if ((TargetPos - MyPos).Size() < 3000.f)
+			if ((TargetPos - MyPos).Size() < 5000.f)
 			{
+				MoveActor->SetInPlayerRange(true);
 				MoveActor->SetOverlay(true, false);
+			}
+			else
+			{
+				MoveActor->SetInPlayerRange(false);
 			}
 		}
 	}
@@ -688,6 +695,8 @@ void AMainCharacter::Revereco(bool bStart)
 	{
 		GetWorld()->GetFirstPlayerController()->SetPause(false);
 		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+		GetWorld()->GetFirstPlayerController()->bEnableMouseOverEvents = false;
+		GetWorld()->GetFirstPlayerController()->bEnableClickEvents = false;
 		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
 
 		GetWorld()->GetFirstPlayerController()->SetMouseCursorWidget(EMouseCursor::Default, CursorDefault);
