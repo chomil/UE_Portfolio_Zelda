@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Containers/Deque.h"
-
 #include "MovableActor.generated.h"
 
 
@@ -37,12 +36,21 @@ public:
 		bInPlayerRange = _bInPlayerRange;
 	}
 
+	void UpdateRewindArrow();
+
 private:
 	UPROPERTY()
 	UMaterialInstance* OverlayMaterial_Rewind = nullptr;
 
 	UPROPERTY()
 	UMaterialInstance* OverlayMaterial_RewindWait = nullptr;
+
+	UPROPERTY()
+	UMaterial* Material_RewindArrow = nullptr;
+
+
+	UPROPERTY()
+	UStaticMesh* Mesh_RewindArrow = nullptr;
 
 
 	TDeque<FTransform> TransformRecord;
@@ -52,15 +60,25 @@ private:
 	int MaxRecord = 0;
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bTimeRewind = false;
-	
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsSelect = false;
+
+	UPROPERTY(Category = "Component", EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* Mesh = nullptr;
+
 	UPROPERTY()
-	UStaticMeshComponent* Mesh = nullptr;
+	class USplineComponent* Spline = nullptr;
+
+	UPROPERTY()
+	TArray<class USplineMeshComponent*> SplineMeshs;	
+
+	UPROPERTY()
+	TArray<class UStaticMeshComponent*> RewindStaticMeshs;
 
 	FVector DeltaPos = FVector::ZeroVector;
 	float VelPerSec = 0.f;
 
 	float MovableDeltaVel = 0.f;
-
 
 	bool bInPlayerRange = false;
 

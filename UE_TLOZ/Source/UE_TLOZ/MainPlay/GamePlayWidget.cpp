@@ -26,7 +26,7 @@ void UGamePlayWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 
-	if (ItemPopVisible == ESlateVisibility::Visible)
+	if (ItemPopVisible == ESlateVisibility::HitTestInvisible)
 	{
 		ItemPopTick += InDeltaTime;
 		if (ItemPopTick > 3.f)
