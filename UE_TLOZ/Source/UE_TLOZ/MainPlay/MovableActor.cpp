@@ -247,7 +247,7 @@ void AMovableActor::UpdateRewindArrow()
 	int PointNum = Spline->GetNumberOfSplinePoints();
 	int SplineMeshNum = SplineMeshs.Num();
 
-	if (PointNum > SplineMeshNum)
+	if (PointNum - 1 > SplineMeshNum)
 	{
 		//빈 포인트 만큼 스플라인 메시 생성
 		for (int i = SplineMeshNum; i < PointNum - 1; i++)
@@ -270,6 +270,17 @@ void AMovableActor::UpdateRewindArrow()
 
 				SplineMeshs.Add(SplineMesh);
 			}
+		}
+	}
+	else if (PointNum - 1 == SplineMeshNum)
+	{
+		//마지막 스플라인 메쉬 길이 업데이트
+		if (SplineMeshs.Last() != nullptr)
+		{
+			FVector StartLocation, StartTangent, EndLocation, EndTangent;
+			Spline->GetLocationAndTangentAtSplinePoint(PointNum - 2, StartLocation, StartTangent, ESplineCoordinateSpace::Local);
+			Spline->GetLocationAndTangentAtSplinePoint(PointNum - 1, EndLocation, EndTangent, ESplineCoordinateSpace::Local);
+			SplineMeshs.Last()->SetStartAndEnd(StartLocation, StartTangent, EndLocation, EndTangent);
 		}
 	}
 	else

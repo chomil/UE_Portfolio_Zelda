@@ -619,8 +619,11 @@ void AMainCharacter::Ability(const FInputActionInstance& Instance)
 	}
 	if (Triggered == true) //능력 변경 UI
 	{
-		UE_LOG(LogTemp, Log, TEXT("능력변경 시작"));
-		HUD->GetMainWidget()->SetAbilityVisible(true);
+		if (bIsAbility == false)
+		{
+			UE_LOG(LogTemp, Log, TEXT("능력변경 시작"));
+			HUD->GetMainWidget()->SetAbilityVisible(true);
+		}
 	}
 	else 
 	{
