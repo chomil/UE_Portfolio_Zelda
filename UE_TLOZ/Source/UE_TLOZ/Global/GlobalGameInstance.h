@@ -33,6 +33,10 @@ public:
 	{
 		return Inventory;
 	};
+	void SetInventory(class UInventory* _Inventory)
+	{
+		Inventory = _Inventory;
+	};
 
 
 	UFUNCTION(BlueprintCallable)

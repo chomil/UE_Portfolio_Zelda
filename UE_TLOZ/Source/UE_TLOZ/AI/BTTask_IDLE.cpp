@@ -18,6 +18,13 @@ void UBTTask_IDLE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 
 	if (2.0f <= GetStateTime(OwnerComp))
 	{
+		if (static_cast<MONSTER_TYPE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("MonsterType"))) == MONSTER_TYPE::BOSS_HINOX)
+		{
+
+			SetStateChange(OwnerComp, MONSTER_AISTATE::SLEEP_START);
+			return;
+		}
+
 		int RandomInt = UGlobalStatic::MainRandom.RandRange(1, 10);
 		if (RandomInt <= 3) //30%
 		{
@@ -30,13 +37,6 @@ void UBTTask_IDLE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 		}
 		else if (RandomInt <= 10) //10%
 		{
-			if (static_cast<MONSTER_TYPE>(GetBlackboardComponent(OwnerComp)->GetValueAsEnum(TEXT("MonsterType"))) == MONSTER_TYPE::BOSS_HINOX)
-			{
-
-				SetStateChange(OwnerComp, MONSTER_AISTATE::SLEEP_START);
-				return;
-			}
-			//patroll
 		}
 		// else IDLE À¯Áö
 		ResetStateTime(OwnerComp);

@@ -11,7 +11,9 @@ UCLASS()
 class UE_TLOZ_API AGamePlayMode : public AGameMode
 {
 	GENERATED_BODY()
-	
+
+protected:
+	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
 public:
 	void SetWidget(class UGamePlayWidget* _PlayWidget)

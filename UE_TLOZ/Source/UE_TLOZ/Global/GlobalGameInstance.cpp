@@ -30,8 +30,8 @@ UGlobalGameInstance::UGlobalGameInstance()
 		}
 	}
 
-
 	UGlobalStatic::MainRandom.GenerateNewSeed();
+
 }
 
 UGlobalGameInstance::~UGlobalGameInstance()
@@ -41,11 +41,6 @@ UGlobalGameInstance::~UGlobalGameInstance()
 void UGlobalGameInstance::Init()
 {
 	Super::Init();
-	if (GetWorld() == nullptr)
-	{
-		return;
-	}
-	Inventory = NewObject<UInventory>(GetWorld());
 }
 
 const FMonsterData* UGlobalGameInstance::GetMonsterData(FName _Name)
