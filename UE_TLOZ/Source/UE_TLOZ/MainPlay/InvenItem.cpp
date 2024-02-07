@@ -4,6 +4,7 @@
 #include "MainPlay/InvenItem.h"
 #include <Global/GlobalGameInstance.h>
 #include "InvenSlotWidget.h"
+#include <Global/GlobalCharacter.h>
 
 UInvenItem::UInvenItem()
 {
@@ -87,6 +88,15 @@ void UInvenItem::UseItem()
 	}
 	if (ItemData->bUsable == true)
 	{
+		if (ItemData->ItemType == ITEM_TYPE::FOOD)
+		{
+			if (GetWorld() == nullptr)
+			{
+				return;
+			}
+			AGlobalCharacter* Player = Cast<AGlobalCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+			Player->AddHP(ItemData->HP);
+		}
 		ItemCnt--;
 		if (ItemCnt <= 0)
 		{

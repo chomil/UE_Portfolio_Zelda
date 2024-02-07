@@ -82,6 +82,7 @@ public:
 	{
 		return HP;
 	}
+	void AddHP(float _HP);
 
 protected:
 	// Called when the game starts or when spawned

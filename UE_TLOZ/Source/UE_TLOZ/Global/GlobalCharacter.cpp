@@ -28,6 +28,15 @@ void AGlobalCharacter::Stunned(bool _bStun)
 	bIsStunning = _bStun;
 }
 
+void AGlobalCharacter::AddHP(float _HP)
+{
+	HP += _HP;
+	if (HP > MaxHP)
+	{
+		HP = MaxHP;
+	}
+}
+
 // Called when the game starts or when spawned
 void AGlobalCharacter::BeginPlay()
 {

@@ -97,7 +97,8 @@ void AMainCharacter::BeginPlay()
 
 	SpringArmCom = Cast<USpringArmComponent>(GetComponentByClass(USpringArmComponent::StaticClass()));
 
-	
+
+	MaxHP = 10;
 	HP = 10;
 	BowChargeTime = 0.f;
 
