@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include <Global/GlobalCharacter.h>
 #include <Global/Data/StateEnums.h>
+#include "ArrowActor.h"
 #include "MainCharacter.generated.h"
 
 
@@ -127,15 +128,17 @@ public:
 	UPROPERTY(Category = "Weapon", EditAnywhere, BlueprintReadWrite)
 	class UNiagaraSystem* HitStrongParticle;
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<AArrowActor> ArrowBP;
 
-	
 
 	UPROPERTY(Category = "Items", EditAnywhere, BlueprintReadWrite)
 	TArray<AActor*> FrontItems;
 
 private:
 	class AGamePlayMode* PlayMode = nullptr;
-	AActor* ArrowActor = nullptr;
+	AArrowActor* ArrowActor = nullptr;
+
 
 
 	UPROPERTY(BlueprintReadWrite, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))

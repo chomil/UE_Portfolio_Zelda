@@ -20,6 +20,8 @@
 #include "MovableActor.h"
 #include <Global/GlobalGameInstance.h>
 #include "Engine/Scene.h"
+#include "ArrowActor.h"
+
 
 
 
@@ -530,14 +532,9 @@ void AMainCharacter::BowAttack(const FInputActionInstance& Instance)
 			if (bEquipBow)
 			{
 				SetAniState(PLAYER_ANISTATE::BOW_CHARGE);
-
-				if (ArrowActor == nullptr)
+				if (ArrowActor == nullptr && ArrowBP != nullptr)
 				{
-					FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
-
-					UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
-
-					ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
+					ArrowActor = GetWorld()->SpawnActor<AArrowActor>(ArrowBP, FVector::ZeroVector, FRotator::ZeroRotator);
 
 					FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
 					Rule.ScaleRule = EAttachmentRule::KeepWorld;
@@ -547,13 +544,9 @@ void AMainCharacter::BowAttack(const FInputActionInstance& Instance)
 			else
 			{
 				SetAniState(PLAYER_ANISTATE::BOW_ON);
-				if (ArrowActor == nullptr)
+				if (ArrowActor == nullptr && ArrowBP != nullptr)
 				{
-					FSoftObjectPath Path = TEXT("/Script/Engine.Blueprint'/Game/BluePrints/GamePlay/Player/BP_Arrow.BP_Arrow'");
-
-					UBlueprint* BP = Cast<UBlueprint>(Path.TryLoad());
-
-					ArrowActor = GetWorld()->SpawnActor(BP->GeneratedClass);
+					ArrowActor = GetWorld()->SpawnActor<AArrowActor>(ArrowBP, FVector::ZeroVector, FRotator::ZeroRotator);
 
 					FAttachmentTransformRules Rule = FAttachmentTransformRules::KeepRelativeTransform;
 					Rule.ScaleRule = EAttachmentRule::KeepWorld;
